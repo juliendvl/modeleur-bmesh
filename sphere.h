@@ -24,10 +24,10 @@ class Sphere : public Renderable
         void draw();
 
         /** Accesseurs / Mutateurs **/
-        float getRadius();
-        float getX();
-        float getY();
-        float getZ();
+        float getRadius() const;
+        float getX() const;
+        float getY() const;
+        float getZ() const;
 
         void setRadius(float radius);
         void setX(float x);
@@ -50,6 +50,6 @@ class Sphere : public Renderable
         float b;
 };
 
-
+std::ostream& operator<<(std::ostream &out, const Sphere &s);
 
 #endif
