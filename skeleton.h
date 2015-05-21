@@ -12,8 +12,8 @@ public:
     void addBall(Sphere* s);
     void addEdge(Segment* sg);
 
-    const std::vector<Sphere*>& getBalls() const;
-    const std::vector<Segment*>& getEdges() const;
+    std::vector<Sphere*>& getBalls();
+    std::vector<Segment*>& getEdges();
 
 
 private:
