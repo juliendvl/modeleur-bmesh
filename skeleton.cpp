@@ -12,10 +12,10 @@ void Skeleton::addEdge(Segment* sg) {
     this->edges.push_back(sg);
 }
 
-const std::vector<Sphere*>& Skeleton::getBalls() const{
+std::vector<Sphere*>& Skeleton::getBalls() {
     return this->balls;
 }
 
-const std::vector<Segment*>& Skeleton::getEdges() const{
+std::vector<Segment*>& Skeleton::getEdges() {
     return this->edges;
 }
