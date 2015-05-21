@@ -3,6 +3,7 @@
 
 #include "renderable.h"
 #include "sphere.h"
+#include "skeleton.h"
 
 class Dragon : public Renderable
 {
@@ -17,7 +18,7 @@ private:
     void createNeck(int nb);
     void createPaw(bool up, float angle, int nb);
 
-    std::vector<Sphere*> skeleton;
+    Skeleton* skel;
     int nbSpheresContourBody;
     int nbSpheresContourTail;
     int nbSpheresContourNeck;
