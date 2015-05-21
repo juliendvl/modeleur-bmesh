@@ -1,11 +1,57 @@
 #include <fstream>
 #include <sstream>
 #include "skeleton.h"
+#include "cylinder.h"
 
 using namespace std;
 
 Skeleton::Skeleton() : drawBetween(false)
 {
+}
+
+Skeleton::~Skeleton() {
+    for(std::vector<Sphere*>::iterator it = balls.begin() ; it != balls.end(); it++){
+        Sphere* s = *it;
+        delete s;
+    }
+    for(std::vector<Segment*>::iterator it = edges.begin() ; it != edges.end(); it++){
+        Segment* sg = *it;
+        delete sg;
+    }
+    for(std::vector<Sphere*>::iterator it = inbetweensBalls.begin() ; it != inbetweensBalls.end(); it++){
+        Sphere* s = *it;
+        delete s;
+    }
+}
+
+void Skeleton::init(Viewer &) {
+    this->interpolation();
+}
+
+void Skeleton::draw() {
+    float r_min = balls[0]->getRadius();
+    float r;
+    for(std::vector<Sphere*>::iterator it = balls.begin() ; it != balls.end(); it++){
+        Sphere* s = *it;
+        s->draw();
+        r = s->getRadius();
+        if (r < r_min) {
+            r_min = r;
+        }
+    }
+    for(std::vector<Segment*>::iterator it = edges.begin() ; it != edges.end(); it++){
+        Segment* sg = *it;
+        qglviewer::Vec pos1(balls[sg->getIndex1()]->getX(), balls[sg->getIndex1()]->getY(), balls[sg->getIndex1()]->getZ());
+        qglviewer::Vec pos2(balls[sg->getIndex2()]->getX(), balls[sg->getIndex2()]->getY(), balls[sg->getIndex2()]->getZ());
+        Cylinder c(pos1,pos2,r_min/2.0);
+        c.draw();
+    }
+    //if (drawBetween) {
+        for(std::vector<Sphere*>::iterator it = inbetweensBalls.begin() ; it != inbetweensBalls.end(); it++){
+            Sphere* s = *it;
+            s->draw();
+        }
+    //}
 }
 
 void Skeleton::addBall(Sphere* s) {

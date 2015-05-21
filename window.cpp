@@ -23,8 +23,8 @@ Window::Window() : QWidget() {
     this->viewer = new Viewer();
     viewer->setParent(this);
 
-    Dragon *d = new Dragon();
-    viewer->addRenderable(d);
+    //Dragon *d = new Dragon();
+    //viewer->addRenderable(d);
 
     QHBoxLayout *hl = new QHBoxLayout();
     hl->addLayout(vl);
@@ -77,6 +77,8 @@ void Window::load() {
         return;
     }
 
+    this->skel->init(*viewer);
+    viewer->addRenderable(this->skel);
     std::cout << *skel << std::endl;
 }
 

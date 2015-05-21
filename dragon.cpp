@@ -40,7 +40,7 @@ Dragon::Dragon()
     createPaw(true,-110.0,nbSpheresPaw);
     createPaw(false,-70.0,nbSpheresPaw);
     createPaw(false,-110.0,nbSpheresPaw);
-    skel->interpolation();
+    //skel->interpolation();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,14 +5,16 @@
 #include "sphere.h"
 #include "segment.h"
 
-class Skeleton
+class Skeleton : public Renderable
 {
 public:
     Skeleton();
+    ~Skeleton();
+    void init(Viewer &);
+    void draw();
 
     void addBall(Sphere* s);
     void addEdge(Segment* sg);
-    void interpolation();
 
     std::vector<Sphere*>& getBalls();
     std::vector<Segment*>& getEdges();
@@ -35,6 +37,7 @@ private:
 
 
     std::vector<float> splitSpaces(const std::string &s);
+    void interpolation();
 
 };
 
