@@ -30,3 +30,5 @@
 Makefile
 modeleur-bmesh
 modeleur-bmesh.pro.user
+moc_*
+.qglviewer.xml

@@ -44,12 +44,14 @@ void Viewer::init()
 	else
 		glDisable(GL_LIGHTING);
 	
-	setSceneRadius(5.0f);
+    setSceneRadius(10.0f);
 
 	list<Renderable *>::iterator it;
 	for (it = renderableList.begin(); it != renderableList.end(); ++it) {
 	        (*it)->init(*this);
 	}
+
+    glClearColor(255, 255, 255, 1);
 }
 
 

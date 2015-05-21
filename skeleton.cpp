@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Skeleton::Skeleton()
+Skeleton::Skeleton() : drawBetween(false)
 {
 }
 
@@ -23,14 +23,31 @@ std::vector<Segment*>& Skeleton::getEdges() {
     return this->edges;
 }
 
+std::vector<Sphere*> Skeleton::getBalls() const {
+    return this->balls;
+}
+
+std::vector<Segment*> Skeleton::getEdges() const {
+    return this->edges;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+bool Skeleton::betweenBalls() {
+    return drawBetween;
+}
+
+void Skeleton::setBetweenBalls(bool draw) {
+    this->drawBetween = draw;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 bool Skeleton::loadFromFile(const std::string &fileName) {
     ifstream file(fileName.c_str(), ios::in);
-    if (!file.is_open()) {
-        cerr << "Unable to open file " << fileName << endl;
+    if (!file.is_open())
         return false;
-    }
 
     string line;
     while (getline(file, line)) {

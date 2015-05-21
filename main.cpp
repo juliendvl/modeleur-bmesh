@@ -1,13 +1,12 @@
 #include <qapplication.h>
-#include "viewer.h"
-#include "skeleton.h"
+#include "window.h"
 
 int main(int argc, char** argv)
 {
-    Skeleton s;
-    s.loadFromFile("data/bonhomme.txt");
+    QApplication app(argc, argv);
 
-    std::cout << s << std::endl;
+    Window window;
+    window.show();
 
-    return 0;
+    return app.exec();
 }
