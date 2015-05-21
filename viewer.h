@@ -23,7 +23,9 @@ public :
 	        
 	Viewer();
 	virtual ~Viewer();
+
 	void addRenderable(Renderable *r);
+    void delRendreable(Renderable *r);
 
 /* Scene methods */
 protected :

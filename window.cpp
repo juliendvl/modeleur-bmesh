@@ -66,8 +66,10 @@ void Window::load() {
         return;
 
     // If we loaded a skeleton before, we first delete the existing one
-    if (this->skel != NULL)
+    if (this->skel != NULL) {
+        viewer->delRendreable(skel);
         delete skel;
+    }
 
     this->skel = new Skeleton();
 
@@ -79,7 +81,6 @@ void Window::load() {
 
     this->skel->init(*viewer);
     viewer->addRenderable(this->skel);
-    std::cout << *skel << std::endl;
 }
 
 

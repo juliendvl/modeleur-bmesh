@@ -31,8 +31,21 @@ void Skeleton::init(Viewer &) {
 void Skeleton::draw() {
     float r_min = balls[0]->getRadius();
     float r;
-    for(std::vector<Sphere*>::iterator it = balls.begin() ; it != balls.end(); it++){
+    for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
         Sphere* s = *it;
+
+        switch (s->valence()) {
+            case 1:
+                s->setColor(1.0, 1.0, 0.0);
+            break;
+            case 2:
+                s->setColor(0.0, 0.0, 1.0);
+            break;
+            default:
+                s->setColor(1.0, 0.0, 0.0);
+            break;
+        }
+
         s->draw();
         r = s->getRadius();
         if (r < r_min) {
@@ -46,12 +59,13 @@ void Skeleton::draw() {
         Cylinder c(pos1,pos2,r_min/2.0);
         c.draw();
     }
-    //if (drawBetween) {
+
+    if (drawBetween) {
         for(std::vector<Sphere*>::iterator it = inbetweensBalls.begin() ; it != inbetweensBalls.end(); it++){
             Sphere* s = *it;
             s->draw();
         }
-    //}
+    }
 }
 
 void Skeleton::addBall(Sphere* s) {
@@ -155,7 +169,22 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
     }
 
     file.close();
+
+    setNeighbors();
+
     return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Skeleton::setNeighbors() {
+    for (unsigned int i = 0; i < edges.size(); i++) {
+        int i1 = edges[i]->getIndex1();
+        int i2 = edges[i]->getIndex2();
+
+        balls[i1]->addNeighbor(i2);
+        balls[i2]->addNeighbor(i1);
+    }
 }
 
 

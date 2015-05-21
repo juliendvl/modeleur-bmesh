@@ -26,6 +26,10 @@ void Viewer::addRenderable(Renderable *r)
         renderableList.push_back(r);
 }
 
+void Viewer::delRendreable(Renderable *r) {
+    renderableList.remove(r);
+}
+
 void Viewer::init()
 {
         // glut initialisation (mandatory) 

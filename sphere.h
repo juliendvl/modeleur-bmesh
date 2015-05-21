@@ -1,8 +1,3 @@
-/**
- * @brief Classe permettant de gérer une sphère texturée ou non
- * @author Julien Daval - Maxime Garcia - Omid Ghorreshi
- */
-
 #ifndef DEF_SPHERE
 #define DEF_SPHERE
 
@@ -36,6 +31,9 @@ class Sphere : public Renderable
 
         void setColor(float r, float g, float b);
 
+        void addNeighbor(int n);
+        int valence();
+
         void operator=(const Sphere& s);
 
 	private:
@@ -48,6 +46,8 @@ class Sphere : public Renderable
         float r;
         float g;
         float b;
+
+        std::vector<int> neighbors;
 };
 
 std::ostream& operator<<(std::ostream &out, const Sphere &s);

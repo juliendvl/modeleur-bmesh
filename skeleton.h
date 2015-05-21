@@ -35,7 +35,7 @@ private:
     // true if we want to draw inbetween-balls; false otherwise
     bool drawBetween;
 
-
+    void setNeighbors();
     std::vector<float> splitSpaces(const std::string &s);
     void interpolation();
 

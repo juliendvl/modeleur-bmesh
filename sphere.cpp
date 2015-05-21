@@ -14,6 +14,7 @@ Sphere::Sphere(float x, float y, float z, float radius, float r, float g, float 
     this->r = r;
     this->g = g;
     this->b = b;
+    this->neighbors = std::vector<int>();
 }
 
 
@@ -72,6 +73,18 @@ void Sphere::setY(float y) {
 ///////////////////////////////////////////////////////////////////////////////
 void Sphere::setZ(float z) {
     this->z = z;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Sphere::addNeighbor(int n) {
+    neighbors.push_back(n);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+int Sphere::valence() {
+    return neighbors.size();
 }
 
 
