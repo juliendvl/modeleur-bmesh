@@ -36,13 +36,16 @@ Window::Window() : QWidget() {
     QObject::connect(loadSkeleton, SIGNAL(clicked()), this, SLOT(load()));
     QObject::connect(saveMesh, SIGNAL(clicked()), this, SLOT(save()));
 
-    this->skel = new Skeleton();
+    this->skel = NULL;
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::changeText() {
+    if (skel == NULL)
+        return;
+
     if (!skel->betweenBalls()) {
         showBetween->setText("Hide inbetween-balls");
         skel->setBetweenBalls(true);
