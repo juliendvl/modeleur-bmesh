@@ -16,6 +16,46 @@ void Skeleton::addEdge(Segment* sg) {
     this->edges.push_back(sg);
 }
 
+void Skeleton::interpolation() {
+    for(std::vector<Segment*>::iterator it = edges.begin() ; it != edges.end(); it++){
+        Segment* sg = *it;
+        Sphere* s1 = balls[sg->getIndex1()];
+        Sphere* s2 = balls[sg->getIndex2()];
+        float x1 = s1->getX();
+        float y1 = s1->getY();
+        float z1 = s1->getZ();
+        float dx = s2->getX()-x1;
+        float dy = s2->getY()-y1;
+        float dz = s2->getZ()-z1;
+        float dist = sqrt(dx*dx + dy*dy + dz*dz);
+        dx = dx/dist;
+        dy = dy/dist;
+        dz = dz/dist;
+        float r1 = s1->getRadius();
+        float r2 = s2->getRadius();
+        // si r1 < r2, on a comme égalités :
+        //  r1 + max*h = r2 et
+        //  somme(r1+h*i) = r2 avec la somme sur i = 1..N
+        float max;
+        if (r1 < r2) {
+            max = (2*dist-r2+r1)/(r2+r1);
+        } else {
+            max = (2*dist-r1+r2)/(r1+r2);
+        }
+        float h = (r2-r1)/max;
+        for (int i = 1; i <= max; i++) {
+            float r = r1 + h*i;
+            this->inbetweensBalls.push_back(new Sphere(x1 + r*dx,
+                                                       y1 + r*dy,
+                                                       z1 + r*dz,
+                                                       r));
+            x1 = x1 + r*dx;
+            y1 = y1 + r*dy;
+            z1 = z1 + r*dz;
+        }
+    }
+}
+
 std::vector<Sphere*>& Skeleton::getBalls() {
     return this->balls;
 }
@@ -30,6 +70,10 @@ std::vector<Sphere*> Skeleton::getBalls() const {
 
 std::vector<Segment*> Skeleton::getEdges() const {
     return this->edges;
+}
+
+std::vector<Sphere*>& Skeleton::getInBetweenBalls() {
+    return this->inbetweensBalls;
 }
 
 

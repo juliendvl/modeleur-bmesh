@@ -40,12 +40,21 @@ Dragon::Dragon()
     createPaw(true,-110.0,nbSpheresPaw);
     createPaw(false,-70.0,nbSpheresPaw);
     createPaw(false,-110.0,nbSpheresPaw);
+    skel->interpolation();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 Dragon::~Dragon() {
-    for(int i = 0; i < (int)skel->getBalls().size(); i++){
-        Sphere* s = skel->getBalls()[i];
+    for(std::vector<Sphere*>::iterator it = skel->getBalls().begin() ; it != skel->getBalls().end(); it++){
+        Sphere* s = *it;
+        delete s;
+    }
+    for(std::vector<Segment*>::iterator it = skel->getEdges().begin() ; it != skel->getEdges().end(); it++){
+        Segment* sg = *it;
+        delete sg;
+    }
+    for(std::vector<Sphere*>::iterator it = skel->getInBetweenBalls().begin() ; it != skel->getInBetweenBalls().end(); it++){
+        Sphere* s = *it;
         delete s;
     }
 }
@@ -63,6 +72,10 @@ void Dragon::draw(){
         qglviewer::Vec pos2(balls[sg->getIndex2()]->getX(), balls[sg->getIndex2()]->getY(), balls[sg->getIndex2()]->getZ());
         Cylinder c(pos1,pos2,R/2.0);
         c.draw();
+    }
+    for(std::vector<Sphere*>::iterator it = skel->getInBetweenBalls().begin() ; it != skel->getInBetweenBalls().end(); it++){
+        Sphere* s = *it;
+        s->draw();
     }
 }
 

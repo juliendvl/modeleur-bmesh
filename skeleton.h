@@ -12,11 +12,13 @@ public:
 
     void addBall(Sphere* s);
     void addEdge(Segment* sg);
+    void interpolation();
 
     std::vector<Sphere*>& getBalls();
     std::vector<Segment*>& getEdges();
     std::vector<Sphere*> getBalls() const;
     std::vector<Segment*> getEdges() const;
+    std::vector<Sphere*>& getInBetweenBalls();
 
     bool betweenBalls();
     void setBetweenBalls(bool draw);
@@ -27,7 +29,7 @@ public:
 private:
     std::vector<Sphere*> balls;     // Balls
     std::vector<Segment*> edges;    // Edges
-
+    std::vector<Sphere*> inbetweensBalls;
     // true if we want to draw inbetween-balls; false otherwise
     bool drawBetween;
 
