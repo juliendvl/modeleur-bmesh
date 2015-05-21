@@ -15,11 +15,19 @@ public:
     std::vector<Sphere*>& getBalls();
     std::vector<Segment*>& getEdges();
 
+    bool loadFromFile(const std::string &fileName);
+
 
 private:
     std::vector<Sphere*> balls;
     std::vector<Segment*> edges;
 
+    std::vector<float> splitSpaces(const std::string &s);
+
 };
+
+
+// Useful for debug
+std::ostream& operator<<(std::ostream &out, const Skeleton &s);
 
 #endif // SKELETON_H

@@ -27,25 +27,25 @@ void Sphere::draw() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-float Sphere::getRadius() {
+float Sphere::getRadius() const {
     return this->radius;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-float Sphere::getX() {
+float Sphere::getX() const {
     return this->x;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-float Sphere::getY() {
+float Sphere::getY() const {
     return this->y;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-float Sphere::getZ() {
+float Sphere::getZ() const {
     return this->z;
 }
 
@@ -87,4 +87,12 @@ void Sphere::setColor(float r, float g, float b) {
     this->r = r;
     this->g = g;
     this->b = b;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+std::ostream& operator<<(std::ostream &out, const Sphere &s) {
+    out << "x = " << s.getX() << "; y = " << s.getY();
+    out << "; z = " << s.getZ() << "; r = " << s.getRadius();
+    return out;
 }

@@ -26,3 +26,7 @@
 *.exe
 *.out
 *.app
+
+Makefile
+modeleur-bmesh
+modeleur-bmesh.pro.user
