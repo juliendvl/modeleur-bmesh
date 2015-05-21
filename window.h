@@ -16,10 +16,12 @@ public:
 public slots:
     void changeText();
     void load();
+    void save();
 
 private:
     QPushButton *loadSkeleton;
     QPushButton *showBetween;
+    QPushButton *saveMesh;
     Viewer *viewer;
 
     Skeleton *skel;

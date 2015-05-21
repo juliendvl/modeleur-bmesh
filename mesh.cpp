@@ -11,6 +11,7 @@
 
 
 using namespace std;
+using qglviewer::Vec;
 
 
 
@@ -19,29 +20,27 @@ using namespace std;
 ///////////////////////////////////////////////////////////////////////////////
 
 Vertex::Vertex() {
-    this->pos = Vect3();
-    this->n = Vect3();
+    this->pos = Vec();
+    this->n = -1;
 }
 
-Vertex::Vertex(Vect3 pos) : pos(pos) {
-    this->n = Vect3();
-}
+Vertex::Vertex(Vec pos) : pos(pos), n(-1) {}
 
-Vertex::Vertex(Vect3 pos, Vect3 n) : pos(pos), n(n) {}
+Vertex::Vertex(Vec pos, int n) : pos(pos), n(n) {}
 
-Vect3& Vertex::getPos() {
+Vec& Vertex::getPos() {
     return pos;
 }
 
-Vect3& Vertex::getNormal() {
+int Vertex::getNormal() {
     return n;
 }
 
-void Vertex::setPos(Vect3 &pos) {
+void Vertex::setPos(Vec &pos) {
     this->pos = pos;
 }
 
-void Vertex::setNormal(Vect3 &n) {
+void Vertex::setNormal(int n) {
     this->n = n;
 }
 
@@ -130,22 +129,61 @@ void Quadrangle::setD(int d) {
 
 
 Mesh::Mesh() {
-    this->vertices  = QVector<Vertex>();
-    this->triangles = QVector<Triangle>();
-    this->quads     = QVector<Quadrangle>();
-}
-
-Mesh::Mesh(QVector<Vertex> v, QVector<Triangle> t, QVector<Quadrangle> q) {
-    this->vertices  = v;
-    this->triangles = t;
-    this->quads     = q;
-}
-
-void Mesh::init(Viewer &v) {
-    (void)v;
+    this->vertices  = vector<Vertex>();
+    this->triangles = vector<Triangle>();
+    this->quads     = vector<Quadrangle>();
 }
 
 void Mesh::draw() {
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+bool Mesh::saveMesh(const string &fileName) {
+    ofstream file(fileName.c_str(), ios::out | ios::trunc);
+    if (!file.is_open())
+        return false;
+
+    file << "#File automatically generated" << endl;
+    file << endl << "o object" << endl << endl;
+
+    // Saving vertices
+    file << "#Vertices" << endl;
+    for (unsigned int i = 0; i < vertices.size(); i++) {
+        Vec &v = vertices[i].getPos();
+        file << "v " << v[0] << " " << v[1] << " " << v[2] << endl;
+    }
+
+    // Saving normals
+    file << endl << "#Normals" << endl;
+    for (unsigned int i = 0; i < normals.size(); i++) {
+        Vec v = normals[i];
+        file << "vn " << v[0] << " " << v[1] << " " << v[2] << endl;
+    }
+
+    // Saving triangle faces
+    file << endl << "#Triangle faces" << endl;
+    for (unsigned int i = 0; i < triangles.size(); i++) {
+        Triangle t = triangles[i];
+
+        file << t.a() << "//" << vertices[t.a()].getNormal() << " ";
+        file << t.b() << "//" << vertices[t.b()].getNormal() << " ";
+        file << t.c() << "//" << vertices[t.c()].getNormal() << " " << endl;
+    }
+
+    // Saving quad faces
+    file << endl << "#Quad faces" << endl;
+    for (unsigned int i = 0; i < quads.size(); i++) {
+        Quadrangle q = quads[i];
+
+        file << q.a() << "//" << vertices[q.a()].getNormal() << " ";
+        file << q.b() << "//" << vertices[q.b()].getNormal() << " ";
+        file << q.c() << "//" << vertices[q.c()].getNormal() << " ";
+        file << q.d() << "//" << vertices[q.d()].getNormal() << " " << endl;
+    }
+
+    file.close();
+    return true;
 }
 
 

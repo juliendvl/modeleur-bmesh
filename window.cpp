@@ -13,9 +13,11 @@ Window::Window() : QWidget() {
 
     this->loadSkeleton = new QPushButton("Load skeleton", this);
     this->showBetween  = new QPushButton("Show inbetween-balls", this);
+    this->saveMesh     = new QPushButton("Save mesh", this);
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->addWidget(loadSkeleton);
+    vl->addWidget(saveMesh);
     vl->addWidget(showBetween);
 
     this->viewer = new Viewer();
@@ -32,6 +34,7 @@ Window::Window() : QWidget() {
 
     QObject::connect(showBetween, SIGNAL(clicked()), this, SLOT(changeText()));
     QObject::connect(loadSkeleton, SIGNAL(clicked()), this, SLOT(load()));
+    QObject::connect(saveMesh, SIGNAL(clicked()), this, SLOT(save()));
 
     this->skel = new Skeleton();
 }
@@ -72,4 +75,13 @@ void Window::load() {
     }
 
     std::cout << *skel << std::endl;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Window::save() {
+    QString fileName = QFileDialog::getSaveFileName(this, "Same mesh",
+                                       QString(), "Object file (*.obj)");
+    QMessageBox::information(this, "Info", "Not yet implemented !");
 }

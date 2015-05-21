@@ -3,25 +3,25 @@
 
 #include <iostream>
 #include <string>
-#include <QVector>
-#include "vect3.h"
+#include <vector>
+#include <QGLViewer/qglviewer.h>
 #include "renderable.h"
 
 
 class Vertex {
     public:
         Vertex();
-        Vertex(Vect3 pos);
-        Vertex(Vect3 pos, Vect3 n);
+        Vertex(qglviewer::Vec pos);
+        Vertex(qglviewer::Vec pos, int n);
 
-        Vect3& getPos();
-        Vect3& getNormal();
-        void setPos(Vect3 &pos);
-        void setNormal(Vect3 &n);
+        qglviewer::Vec& getPos();
+        int getNormal();
+        void setPos(qglviewer::Vec &pos);
+        void setNormal(int n);
 
    private:
-        Vect3 pos;
-        Vect3 n;
+        qglviewer::Vec pos;
+        int n;
 
         void draw();
 };
@@ -66,25 +66,22 @@ class Quadrangle {
 class Mesh : public Renderable {
     public:
         Mesh();
-        Mesh(QVector<Vertex> v, QVector<Triangle> t, QVector<Quadrangle> q);
 
-        QVector<Vertex>& getVertices();
-        QVector<Triangle>& getTriangles();
-        QVector<Quadrangle>& getQuads();
+        std::vector<Vertex>& getVertices();
+        std::vector<qglviewer::Vec>& getNormals();
+        std::vector<Triangle>& getTriangles();
+        std::vector<Quadrangle>& getQuads();
 
-        void saveMesh(const std::string &file);
+        bool saveMesh(const std::string &fileName);
 
-        void init(Viewer &);
         void draw();
 
     private:
-        QVector<Vertex>     vertices;
-        QVector<Triangle>   triangles;
-        QVector<Quadrangle> quads;
+        std::vector<Vertex>     vertices;
+        std::vector<qglviewer::Vec> normals;
+        std::vector<Triangle>   triangles;
+        std::vector<Quadrangle> quads;
 
-        std::string doubleSlash(const std::string &line);
-        std::string replaceSlash(const std::string &line);
-        QVector<int> splitSpaces(const std::string &line);
 };
 
 #endif

@@ -50,9 +50,9 @@ protected :
 
 	/// Handle keyboard events specifically
 	virtual void mouseMoveEvent(QMouseEvent *e);
-		
-	/// Draw every objects of the scene
-	virtual QString helpString() const;
+
+    /// Draw every objects of the scene
+    virtual QString helpString() const;
 };
 
 #endif
