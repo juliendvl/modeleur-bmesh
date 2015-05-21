@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include "skeleton.h"
 
 using namespace std;
@@ -54,6 +55,7 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
         // Vertex ?
         if (line[0] == 'v') {
             vector<float> v = splitSpaces(line.substr(2));
+
             addBall(new Sphere(v[0], v[1], v[2], v[3]));
         }
         else if (line[0] == 'e') {  // Edge ?
@@ -75,7 +77,14 @@ vector<float> Skeleton::splitSpaces(const string &s) {
         if (s[i] == ' ' || i == s.size() - 1) {
             if (i == s.size() - 1)
                 s1+=s[i];
-            ret.push_back(atof(s1.c_str()));
+
+            stringstream ss;
+            ss.str(s1);
+
+            float f;
+            ss >> f;
+
+            ret.push_back(f);
             s1 = "";
         }
         else
