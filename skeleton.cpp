@@ -34,6 +34,9 @@ void Skeleton::draw() {
     for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
         Sphere* s = *it;
 
+        // Warning: some balls may be similar but identified with different
+        // indexes ! So you could see some end nodes which seem to be
+        // joint or connection nodes
         switch (s->valence()) {
             case 1:
                 s->setColor(1.0, 1.0, 0.0);
