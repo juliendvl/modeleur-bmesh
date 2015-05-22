@@ -54,6 +54,7 @@ void Window::changeText() {
         showBetween->setText("Show inbetween-balls");
         skel->setBetweenBalls(false);
     }
+    viewer->update();
 }
 
 
