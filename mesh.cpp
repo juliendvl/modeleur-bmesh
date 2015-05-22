@@ -21,27 +21,29 @@ using qglviewer::Vec;
 
 Vertex::Vertex() {
     this->pos = Vec();
-    this->n = -1;
+    this->normal = Vec();
 }
 
-Vertex::Vertex(Vec pos) : pos(pos), n(-1) {}
+Vertex::Vertex(Vec pos) : pos(pos) {
+    this->normal = Vec();
+}
 
-Vertex::Vertex(Vec pos, int n) : pos(pos), n(n) {}
+Vertex::Vertex(Vec &pos, Vec &n) : pos(pos), normal(n) {}
 
 Vec& Vertex::getPos() {
     return pos;
 }
 
-int Vertex::getNormal() {
-    return n;
+Vec& Vertex::getNormal() {
+    return normal;
 }
 
 void Vertex::setPos(Vec &pos) {
     this->pos = pos;
 }
 
-void Vertex::setNormal(int n) {
-    this->n = n;
+void Vertex::setNormal(Vec n) {
+    this->normal = n;
 }
 
 void Vertex::draw() {
@@ -127,13 +129,33 @@ void Quadrangle::setD(int d) {
 /// MESH CLASS
 ///////////////////////////////////////////////////////////////////////////////
 
-
+///////////////////////////////////////////////////////////////////////////////
 Mesh::Mesh() {
     this->vertices  = vector<Vertex>();
     this->triangles = vector<Triangle>();
     this->quads     = vector<Quadrangle>();
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+vector<Vertex>& Mesh::getVertices() {
+    return vertices;
+}
+
+vector<Vec>& Mesh::getNormals() {
+    return normals;
+}
+
+vector<Triangle>& Mesh::getTriangles() {
+    return triangles;
+}
+
+vector<Quadrangle>& Mesh::getQuads() {
+    return quads;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 void Mesh::draw() {
 }
 

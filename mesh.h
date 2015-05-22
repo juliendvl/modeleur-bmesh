@@ -12,16 +12,16 @@ class Vertex {
     public:
         Vertex();
         Vertex(qglviewer::Vec pos);
-        Vertex(qglviewer::Vec pos, int n);
+        Vertex(qglviewer::Vec &pos, qglviewer::Vec &n);
 
         qglviewer::Vec& getPos();
-        int getNormal();
+        qglviewer::Vec& getNormal();
         void setPos(qglviewer::Vec &pos);
-        void setNormal(int n);
+        void setNormal(qglviewer::Vec n);
 
    private:
         qglviewer::Vec pos;
-        int n;
+        qglviewer::Vec normal;
 
         void draw();
 };
