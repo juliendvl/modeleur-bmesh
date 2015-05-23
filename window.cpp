@@ -9,22 +9,40 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 Window::Window() : QWidget() {
+
+    initGUI();
+
+    //Dragon *d = new Dragon();
+    //viewer->addRenderable(d);
+
+    this->skel = NULL;
+    this->mesh = new Mesh();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+Window::~Window() {
+    delete viewer;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Window::initGUI() {
     this->setWindowTitle("Modeleur 3D par Bmesh");
 
     this->loadSkeleton = new QPushButton("Load skeleton", this);
     this->showBetween  = new QPushButton("Show inbetween-balls", this);
     this->saveMesh     = new QPushButton("Save mesh", this);
+    this->catmullClark = new QPushButton("Subdivide Mesh", this);
 
     QVBoxLayout *vl = new QVBoxLayout();
     vl->addWidget(loadSkeleton);
     vl->addWidget(saveMesh);
     vl->addWidget(showBetween);
+    vl->addWidget(catmullClark);
 
     this->viewer = new Viewer();
     viewer->setParent(this);
-
-    //Dragon *d = new Dragon();
-    //viewer->addRenderable(d);
 
     QHBoxLayout *hl = new QHBoxLayout();
     hl->addLayout(vl);
@@ -35,11 +53,9 @@ Window::Window() : QWidget() {
     QObject::connect(showBetween, SIGNAL(clicked()), this, SLOT(changeText()));
     QObject::connect(loadSkeleton, SIGNAL(clicked()), this, SLOT(load()));
     QObject::connect(saveMesh, SIGNAL(clicked()), this, SLOT(save()));
+    QObject::connect(catmullClark, SIGNAL(clicked()), this, SLOT(subdivide()));
 
-    this->skel = NULL;
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::changeText() {
@@ -82,6 +98,7 @@ void Window::load() {
 
     this->skel->init(*viewer);
     viewer->addRenderable(this->skel);
+    showBetween->setText("Show inbetween-balls");
 }
 
 
@@ -91,4 +108,11 @@ void Window::save() {
     QString fileName = QFileDialog::getSaveFileName(this, "Same mesh",
                                        QString(), "Object file (*.obj)");
     QMessageBox::information(this, "Info", "Not yet implemented !");
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Window::subdivide() {
+    if (!mesh->subdivide())
+        QMessageBox::critical(this, "Error", "Subdivision failed !");
 }
