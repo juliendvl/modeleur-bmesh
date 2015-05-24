@@ -1,6 +1,6 @@
 #include <iostream>
+#include <vector>
 #include <fstream>
-#include <stdexcept>
 #ifndef __APPLE__
     #include <GL/glew.h>
     #include <GL/glut.h>
@@ -11,7 +11,6 @@
 #include "mesh.h"
 
 using namespace std;
-using qglviewer::Vec;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,6 +26,12 @@ Mesh::Mesh() {
 ///////////////////////////////////////////////////////////////////////////////
 Mesh::~Mesh() {
     delete mesh;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+BMesh& Mesh::getMesh() {
+    return *mesh;
 }
 
 
@@ -71,6 +76,8 @@ bool Mesh::subdivide() {
 
 
 bool Mesh::saveMesh(const string &fileName) {
+    vector<OpenMesh::Vec3f> n;
+
     ofstream file(fileName.c_str(), ios::out | ios::trunc);
     if (!file.is_open())
         return false;
@@ -79,7 +86,7 @@ bool Mesh::saveMesh(const string &fileName) {
     file << "o mesh" << endl;
 
     // Vertices
-    file << "# Vertices" << endl;
+    file << endl << "# Vertices" << endl;
     BMesh::ConstVertexIter vit;
     for (vit = mesh->vertices_begin(); vit != mesh->vertices_end(); ++vit) {
         OpenMesh::Vec3f v = mesh->point(*vit);
@@ -87,13 +94,40 @@ bool Mesh::saveMesh(const string &fileName) {
     }
 
     // Normals
-    file << "# Normals" << endl;
+    file << endl << "# Normals" << endl;
     for (vit = mesh->vertices_begin(); vit != mesh->vertices_end(); ++vit) {
         OpenMesh::Vec3f v = mesh->normal(*vit);
+        n.push_back(v);
         file << "vn " << v[0] << " " << v[1] << " " << v[2] << endl;
+    }
+
+
+    // Faces
+    file << endl << "# Faces" << endl;
+    BMesh::ConstFaceIter fit;
+    for (fit = mesh->faces_begin(); fit != mesh->faces_end(); ++fit) {
+        BMesh::FaceHandle f = *fit;
+        BMesh::ConstFaceVertexIter cvit = mesh->cfv_iter(f);
+
+        file << "f ";
+        for (unsigned int i = 0; i < 4; i++) {
+            file << *cvit << "//";
+            file << getNormalIndex(n, mesh->normal(*cvit)) << endl;
+        }
     }
 
     file.close();
     return true;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+int Mesh::getNormalIndex(const std::vector<OpenMesh::Vec3f> &v,
+                         const OpenMesh::Vec3f &n)
+{
+    for (unsigned int i = 0; i < v.size(); i++)
+        if (v[i] == n)
+            return i;
+
+    return -1;
+}

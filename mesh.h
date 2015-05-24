@@ -1,10 +1,7 @@
 #ifndef DEF_MESH
 #define DEF_MESH
 
-#include <iostream>
 #include <string>
-#include <vector>
-#include <QGLViewer/qglviewer.h>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
 #include <OpenMesh/Tools/Subdivider/Uniform/CatmullClarkT.hh>
 
@@ -19,12 +16,18 @@ public:
     Mesh();
     ~Mesh();
 
+    BMesh& getMesh();
+
     void draw();
+
     bool subdivide();
     bool saveMesh(const std::string &fileName);
 
 private:
     BMesh *mesh;
+
+    int getNormalIndex(const std::vector<OpenMesh::Vec3f> &v,
+                       const OpenMesh::Vec3f &n);
 
 };
 
