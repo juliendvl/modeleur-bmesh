@@ -112,8 +112,10 @@ bool Mesh::saveMesh(const string &fileName) {
         file << "f ";
         for (unsigned int i = 0; i < 4; i++) {
             file << *cvit << "//";
-            file << getNormalIndex(n, mesh->normal(*cvit)) << endl;
+            file << getNormalIndex(n, mesh->normal(*cvit)) << " ";
+            ++cvit;
         }
+        file << endl;
     }
 
     file.close();
