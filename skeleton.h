@@ -38,6 +38,7 @@ private:
     void setNeighbors();
     std::vector<float> splitSpaces(const std::string &s);
     void interpolation();
+    void sweeping();
 
 };
 

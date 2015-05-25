@@ -1,10 +1,10 @@
-#include "sphere.h"
+    #include "sphere.h"
 #include <stdexcept>
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-Sphere::Sphere(float x, float y, float z, float radius, float r, float g, float b) {
+Sphere::Sphere(float x, float y, float z, float radius, float r, float g, float b) : sweeped(false) {
     this->x = x;
     this->y = y;
     this->z = z;
@@ -50,6 +50,16 @@ float Sphere::getZ() const {
     return this->z;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+bool Sphere::getSweeped() const {
+    return this->sweeped;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+std::vector<int> Sphere::getNeighbors() const {
+    return this->neighbors;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 void Sphere::setRadius(float radius) {
     if (radius < 0)
@@ -75,6 +85,10 @@ void Sphere::setZ(float z) {
     this->z = z;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+void Sphere::setSweeped(bool b) {
+    this->sweeped = b;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 void Sphere::addNeighbor(int n) {

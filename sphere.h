@@ -23,6 +23,8 @@ class Sphere : public Renderable
         float getX() const;
         float getY() const;
         float getZ() const;
+        bool getSweeped() const;
+        std::vector<int> getNeighbors() const;
 
         void setRadius(float radius);
         void setX(float x);
@@ -30,6 +32,7 @@ class Sphere : public Renderable
         void setZ(float z);
 
         void setColor(float r, float g, float b);
+        void setSweeped(bool b);
 
         void addNeighbor(int n);
         int valence();
@@ -46,6 +49,8 @@ class Sphere : public Renderable
         float r;
         float g;
         float b;
+
+        bool sweeped;
 
         std::vector<int> neighbors;
 };

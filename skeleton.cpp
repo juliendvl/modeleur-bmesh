@@ -119,6 +119,22 @@ void Skeleton::interpolation() {
     }
 }
 
+void Skeleton::sweeping() {
+    /*for (std::vector<Segment*>::iterator it = balls.begin() ; it != balls.end(); it++) {
+        Sphere* s = *it;
+        // If this is a joint node
+        if (s->valence() > 2) {
+            for (std::vector<Segment*>::iterator it2 = s->getNeighbors().begin() ; it2 != s->getNeighbors().end(); it2++) {
+                Sphere* neighbor = *it2;
+                // If it hasn't get sweeped
+                if (!neighbor->getSweeped()) {
+
+                }
+            }
+        }
+    }*/
+}
+
 std::vector<Sphere*>& Skeleton::getBalls() {
     return this->balls;
 }
