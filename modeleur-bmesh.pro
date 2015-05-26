@@ -9,7 +9,7 @@ HEADERS  = include/*.h
 SOURCES  = src/*.cpp
 
 macx:LIBS *= -framework Glut
-linux-g++*:LIBS *= -lglut -lOpenMeshCored
+linux-g++*:LIBS *= -lglut -lOpenMeshCored -lGLU
 
 # MacOS, default
 QGL = -lqglviewer
