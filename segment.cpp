@@ -13,6 +13,17 @@ int Segment::getIndex2() const {
     return this->index2;
 }
 
+std::vector<Sphere*> Segment::getInBetweenBalls() const {
+    return this->inbetweenballs;
+}
+
+std::vector<Sphere*>& Segment::getInBetweenBalls() {
+    return this->inbetweenballs;
+}
+
+void Segment::addInBetweenBall(Sphere* s) {
+    inbetweenballs.push_back(s);
+}
 
 std::ostream& operator<<(std::ostream &out, const Segment &s) {
     out << "edge " << s.getIndex1() << " " << s.getIndex2();

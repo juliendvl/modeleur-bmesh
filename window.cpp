@@ -4,8 +4,6 @@
 #include <QMessageBox>
 
 #include "window.h"
-#include "dragon.h"
-
 
 ///////////////////////////////////////////////////////////////////////////////
 Window::Window() : QWidget() {
