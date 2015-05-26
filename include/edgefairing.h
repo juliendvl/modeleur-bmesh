@@ -11,7 +11,7 @@ class EdgeFairing
 {
 
 public:
-    bool fairing(Mesh &mesh);
+    bool fairing();
 
     EdgeFairing(Mesh &mesh);
 
@@ -20,6 +20,9 @@ private:
 
     std::vector<OpenMesh::Vec3f> projection(const BMesh::VertexHandle &o,
                   const std::vector<OpenMesh::Vec3f> &v);
+
+    float min(float a, float b);
+    float max(float a, float b);
 
 
 };
