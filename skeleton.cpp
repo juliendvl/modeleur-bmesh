@@ -122,13 +122,42 @@ void Skeleton::interpolation() {
 void Skeleton::sweeping() {
     /*for (std::vector<Segment*>::iterator it = balls.begin() ; it != balls.end(); it++) {
         Sphere* s = *it;
+        float x1,y1,z1,x2,y2,z2,x3,y3,z3,dist1,dist2;
         // If this is a joint node
         if (s->valence() > 2) {
-            for (std::vector<Segment*>::iterator it2 = s->getNeighbors().begin() ; it2 != s->getNeighbors().end(); it2++) {
-                Sphere* neighbor = *it2;
+            for (std::vector<int>::iterator it2 = s->getNeighbors().begin() ; it2 != s->getNeighbors().end(); it2++) {
+                int index = *it2;
+                Sphere* neighbor = balls[index];
                 // If it hasn't get sweeped
                 if (!neighbor->getSweeped()) {
+                    // If it is an end node
+                    if (neighbor->valence() == 1) {
+                        x1 = neighbor->getX() - s->getX();
+                        y1 = neighbor->getY() - s->getY();
+                        z1 = neighbor->getZ() - s->getZ();
+                        dist1 = sqrt(x1*x1 + y1*y1 + z1*z1);
+                        x1 = x1/dist1;
+                        y1 = y1/dist1;
+                        z1 = z1/dist1;
+                        if ((x1 == 0) && (y1 == 0)) {
+                            x2 = 1;
+                            y2 = 0;
+                            z2 = 0;
 
+                            x3 = 0;
+                            y3 = 1;
+                            z3 = 0;
+                        } else {
+                            dist2 = sqrt(x1*x1 + y1*y1);
+                            x2 = -y1/dist2;
+                            y2 = x1/dist2;
+                            z2 = 0;
+
+                            x3 = -x1*z1/dist2;
+                            y3 = y1*z1/dist2;
+                            z3 = (x1*x1 + y1*y1)/dist2;
+                        }
+                    }
                 }
             }
         }
