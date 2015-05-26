@@ -2,9 +2,11 @@ TEMPLATE = app
 TARGET   = modeleur-bmesh
 CONFIG  += qt opengl warn_on debug
 QT *= xml opengl 
+INCLUDEPATH += src include
+DEPENDPATH += src include
 
-HEADERS  = *.h
-SOURCES  = *.cpp
+HEADERS  = include/*.h
+SOURCES  = src/*.cpp
 
 macx:LIBS *= -framework Glut
 linux-g++*:LIBS *= -lglut -lOpenMeshCored
