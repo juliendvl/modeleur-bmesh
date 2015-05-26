@@ -99,6 +99,7 @@ void Window::load() {
     this->skel->init(*viewer);
     viewer->addRenderable(this->skel);
     showBetween->setText("Show inbetween-balls");
+    viewer->update();
 }
 
 
