@@ -5,6 +5,8 @@
 #include "sphere.h"
 #include "segment.h"
 
+/* Classe du squelette */
+
 class Skeleton : public Renderable
 {
 public:
