@@ -22,6 +22,8 @@ private:
     OpenMesh::Vec3f scalarNormal(const OpenMesh::Vec3f &p);
     float fi(const Sphere *s, const OpenMesh::Vec3f &p);
     float scalarField(const OpenMesh::Vec3f &p);
+
+    float absf(float a);
 };
 
 #endif
