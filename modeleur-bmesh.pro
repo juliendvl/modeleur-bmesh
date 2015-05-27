@@ -8,6 +8,8 @@ DEPENDPATH += src include
 HEADERS  = include/*.h
 SOURCES  = src/*.cpp
 
+INCLUDEPATH += Eigen/
+
 macx:LIBS *= -framework Glut
 linux-g++*:LIBS *= -lglut -lOpenMeshCored -lGLU
 
