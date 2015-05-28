@@ -4,6 +4,10 @@
 #include <iostream>
 #include <sphere.h>
 
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+
+typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
+
 class Segment
 {
 public:
@@ -12,13 +16,16 @@ public:
     int getIndex2() const;
     std::vector<Sphere*> getInBetweenBalls() const;
     std::vector<Sphere*>& getInBetweenBalls();
+    std::vector<BMesh::Point>& getPoints();
 
     void addInBetweenBall(Sphere* s);
+    void addPoint(BMesh::Point p);
 
 private:
     int index1;
     int index2;
     std::vector<Sphere*> inbetweenballs;
+    std::vector<BMesh::Point> pointsMesh;
 };
 
 std::ostream& operator<<(std::ostream &out, const Segment &s);

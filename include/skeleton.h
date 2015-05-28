@@ -4,6 +4,7 @@
 #include "renderable.h"
 #include "sphere.h"
 #include "segment.h"
+#include "mesh.h"
 
 /* Classe du squelette */
 
@@ -34,11 +35,17 @@ private:
     std::vector< std::vector<Segment*> > edges;    // Edges
     // true if we want to draw inbetween-balls; false otherwise
     bool drawBetween;
+    Mesh mesh;
 
     void setNeighbors();
     std::vector<float> splitSpaces(const std::string &s);
     void interpolation();
     void sweeping();
+    void sweepVoisin(int origin, int neighbor);
+    void createFaces(Segment* sg);
+    void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
+
+    std::vector<Sphere*> pointsMesh;
 
 };
 

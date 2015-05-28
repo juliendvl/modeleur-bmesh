@@ -21,8 +21,16 @@ std::vector<Sphere*>& Segment::getInBetweenBalls() {
     return this->inbetweenballs;
 }
 
+std::vector<BMesh::Point>& Segment::getPoints() {
+    return this->pointsMesh;
+}
+
 void Segment::addInBetweenBall(Sphere* s) {
     inbetweenballs.push_back(s);
+}
+
+void Segment::addPoint(BMesh::Point p) {
+    pointsMesh.push_back(p);
 }
 
 std::ostream& operator<<(std::ostream &out, const Segment &s) {

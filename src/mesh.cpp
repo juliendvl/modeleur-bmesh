@@ -48,6 +48,7 @@ void Mesh::draw() {
 
         OpenMesh::Vec3f n = mesh->normal(f);
         glBegin(GL_QUADS);
+            glColor3f(0.0,1.0,1.0);
             glNormal3f(n[0], n[1], n[2]);
             for (unsigned int i = 0; i < 4; i++) {
                 OpenMesh::Vec3f v = mesh->point(*cvit);
