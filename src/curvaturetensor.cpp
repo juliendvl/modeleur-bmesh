@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace Eigen;
+using OpenMesh::Vec2f;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -83,8 +84,20 @@ vector<float> CurvatureTensor::getCurvatures() const {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-vector<Vector2f> CurvatureTensor::getDirections() const {
+vector<Vector2f> CurvatureTensor::getEigenDirections() const {
     return this->directions;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+vector<Vec2f> CurvatureTensor::getOMDirections() const {
+    vector<Vector2f> eigenDir = getEigenDirections();
+    vector<Vec2f> res;
+
+    res.push_back(OMEigen::toOpenMesh(eigenDir[0]));
+    res.push_back(OMEigen::toOpenMesh(eigenDir[1]));
+
+    return res;
 }
 
 

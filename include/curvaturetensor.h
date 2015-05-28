@@ -17,7 +17,8 @@ public:
                  const std::vector<BMesh::VertexHandle> &neighbors);
 
     std::vector<float> getCurvatures() const;
-    std::vector<Eigen::Vector2f> getDirections() const;
+    std::vector<Eigen::Vector2f> getEigenDirections() const;
+    std::vector<OpenMesh::Vec2f> getOMDirections() const;
 
 private:
     BMesh m;
