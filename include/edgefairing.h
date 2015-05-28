@@ -19,7 +19,7 @@ private:
     BMesh m;
 
     std::vector<OpenMesh::Vec3f> projection(const BMesh::VertexHandle &o,
-                  const std::vector<OpenMesh::Vec3f> &v);
+                  const std::vector<BMesh::VertexHandle> &v);
 
     float min(float a, float b);
     float max(float a, float b);
