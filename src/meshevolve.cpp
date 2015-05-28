@@ -1,7 +1,7 @@
 #include <iostream>
 #include <list>
 #include "meshevolve.h"
-#include "curvaturetensor.h"
+#include "include/curvaturetensor.h"
 
 using namespace std;
 using OpenMesh::Vec3f;

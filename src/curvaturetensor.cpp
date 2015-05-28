@@ -1,6 +1,6 @@
 #include <iostream>
 #include <Eigen/Eigenvalues>
-#include "curvaturetensor.h"
+#include "include/curvaturetensor.h"
 
 using namespace std;
 using namespace Eigen;
