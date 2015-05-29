@@ -4,6 +4,8 @@
 #include <QMessageBox>
 
 #include "window.h"
+#include "meshevolve.h"
+#include "edgefairing.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 Window::Window() : QWidget() {
@@ -14,7 +16,6 @@ Window::Window() : QWidget() {
     //viewer->addRenderable(d);
 
     this->skel = NULL;
-    this->mesh = new Mesh();
 }
 
 
@@ -193,7 +194,7 @@ void Window::save() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::subdivide() {
-    if (!mesh->subdivide())
+    if (!skel->getMesh().subdivide())
         QMessageBox::critical(this, "Error", "Subdivision failed !");
 
     catmullClark->setEnabled(false);
@@ -212,7 +213,10 @@ void Window::evolve() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::fairing() {
-    // TODO: process edge fairing
+    EdgeFairing ef(skel->getMesh());
+
+    if (!ef.fairing())
+        QMessageBox::critical(this, "Error", "Fairing failed !");
 
     fair->setEnabled(false);
     sweep->setEnabled(true);

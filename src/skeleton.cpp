@@ -591,6 +591,12 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
 
 
 ///////////////////////////////////////////////////////////////////////////////
+Mesh& Skeleton::getMesh() {
+    return mesh;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 void Skeleton::setNeighbors() {
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {

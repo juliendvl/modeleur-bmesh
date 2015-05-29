@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <QMap>
 #include "meshevolve.h"
 #include "include/curvaturetensor.h"
 
@@ -27,8 +28,9 @@ bool MeshEvolve::evolve() {
     // While there are points which need to evolve
     while (points.size() != 0) {
         Vec3f newPt;
-
+        QMap<BMesh::VertexHandle, Vec3f> pts;
         list<BMesh::VertexHandle>::iterator lit;
+
         for (lit = points.begin(); lit != points.end(); ++lit) {
             Vec3f p  = m.point(*lit);
             Vec3f sn = scalarNormal(p);
@@ -50,12 +52,17 @@ bool MeshEvolve::evolve() {
 
             // We compute the new point
             newPt = p + F * DT * sn;
+            pts.insert(*lit, newPt);
+        }
 
-            // If the point do not need to evolve anymore
-            if (scalarField(newPt) < EPS)
-                points.remove(*lit);
+        // We update vertex positions and we check if some vertex do not
+        // need to evolve anymore
+        QMap<BMesh::VertexHandle, Vec3f>::iterator it;
+        for (it = pts.begin(); it != pts.end(); ++it) {
+            m.set_point(it.key(), it.value());
 
-            m.set_point(*lit, newPt);
+            if (scalarField(it.value()) < EPS)
+                points.remove(it.key());
         }
     }
 
@@ -76,7 +83,10 @@ Vec3f MeshEvolve::scalarNormal(const Vec3f &p) {
     float ny = (scalarField(p + dy) - scalarField(p - dy)) / (2*DP);
     float nz = (scalarField(p + dz) - scalarField(p - dz)) / (2*DP);
 
-    return -Vec3f(nx, ny, nz);
+    Vec3f n(-nx, -ny, -nz);
+    n.normalize();
+
+    return n;
 }
 
 

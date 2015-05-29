@@ -30,6 +30,8 @@ public:
 
     bool loadFromFile(const std::string &fileName);
 
+    Mesh& getMesh();
+
 
 private:
     std::vector<Sphere*> balls;     // Balls
