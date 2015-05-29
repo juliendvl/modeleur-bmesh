@@ -171,6 +171,7 @@ void Window::doSweep() {
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
     stitch->setEnabled(true);
+    skel->sweeping();
 }
 
 

@@ -31,7 +31,6 @@ Skeleton::~Skeleton() {
 
 void Skeleton::init(Viewer &) {
     this->interpolation();
-    this->sweeping();
 }
 
 void Skeleton::draw() {
@@ -102,6 +101,8 @@ void Skeleton::interpolation() {
             if (sg != NULL) {
                 Sphere* s1 = balls[i];
                 Sphere* s2 = balls[j];
+                float r1 = s1->getRadius();
+                float r2 = s2->getRadius();
                 float x1 = s1->getX();
                 float y1 = s1->getY();
                 float z1 = s1->getZ();
@@ -109,11 +110,13 @@ void Skeleton::interpolation() {
                 float dy = s2->getY()-y1;
                 float dz = s2->getZ()-z1;
                 float dist = sqrt(dx*dx + dy*dy + dz*dz);
+                // If there is an intersection, don't draw the inbetweenballs
+                if (r1 + r2 > dist) {
+                    continue;
+                }
                 dx = dx/dist;
                 dy = dy/dist;
                 dz = dz/dist;
-                float r1 = s1->getRadius();
-                float r2 = s2->getRadius();
                 // si r1 < r2, on a comme égalités :
                 //  r1 + max*h = r2 et
                 //  somme(r1+h*k) = r2 avec la somme sur k = 1..N
@@ -254,7 +257,10 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
     BMesh::VertexIter vit = m.vertices_end();
     for (int count = 0; count < 4; ++count) {
         --vit;
+    }
+    for (int count = 0; count < 4; ++count) {
         vhandle2.push_back(*vit);
+        ++vit;
     }
     Sphere* o = balls[origin];
     Sphere* n = balls[neighbor];
@@ -266,10 +272,8 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
     Vec3f axe_Z(0,0,1);
     // If it hasn't been sweeped
     if (!n->getSweeped()) {
-        printf("entree dans if\n");
         printf("o = %i, n = %i\n", origin, neighbor);
-        printf("valO = %i, valN = %i\n", o->valence(), n->valence());
-
+        printf("valo = %i, valn = %i\n", o->valence(), n->valence());
         // If it is an end or connection node, it is sweeped
         if ((n->valence() == 1) || (n->valence() == 2)) {
             n->setSweeped(true);
@@ -300,6 +304,7 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         }
 
         std::vector<Sphere*> inbetweenballs = sg->getInBetweenBalls();
+        printf("size = %i\n", inbetweenballs.size());
         if (inbetweenballs.size() > 0) {
             Sphere* b = inbetweenballs[0];
             cx = b->getX();
@@ -308,9 +313,9 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             r = b->getRadius();
 
             for (int k = 0; k <= 3; k++) {
-                vhandle.push_back(m.add_vertex(BMesh::Point(cx + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                            cy + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                            cz + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                vhandle.push_back(m.add_vertex(BMesh::Point(cx + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                                                            cy + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                                                            cz + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
             }
 
             // If the origin is a connection node, we buill the mesh
@@ -329,9 +334,9 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
                 cz = b->getZ();
                 r = b->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(cx + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                      cy + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                            cz + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                    vhandle.push_back(m.add_vertex(BMesh::Point(cx + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                                                                cy + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                                                                cz + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
                 }
 
                 createFaces(vhandle,false);
@@ -342,9 +347,9 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             if ((n->valence() == 1) || (n->valence() == 2)) {
                 r = n->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                                ny + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                                nz + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                                                                ny + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                                                                nz + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
                 }
                 createFaces(vhandle,false);
             }
@@ -354,23 +359,20 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             if ((n->valence() == 1) || (n->valence() == 2)) {
                 r = n->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                                ny + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                                nz + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                                                                ny + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                                                                nz + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
                 }
-            }
-
-            // If the origin is a connection node, we buill the mesh
-            // between the two edges of the connection node
-            if (o->valence() == 2) {
-                for (int count = 4; count > 0; --count) {
-                    vhandle2.push_back(vhandle[vhandle.size()-count]);
+                // If the origin is a connection node, we buill the mesh
+                // between the two edges of the connection node
+                if (o->valence() == 2) {
+                    for (int count = 4; count > 0; --count) {
+                        vhandle2.push_back(vhandle[vhandle.size()-count]);
+                    }
+                    createFaces(vhandle2, false);
                 }
-                createFaces(vhandle2, false);
             }
         }
-
-        printf("apres liaison\n");
 
         // If it is an end node, we close the mesh
         if (n->valence() == 1) {
@@ -378,9 +380,9 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             cy = ny + r*axe_x[1];
             cz = nz + r*axe_x[2];
             for (int k = 0; k <= 3; k++) {
-                vhandle.push_back(m.add_vertex(BMesh::Point(cx + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                            cy + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                            cz + 1.5*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                vhandle.push_back(m.add_vertex(BMesh::Point(cx + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                                                            cy + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                                                            cz + 2*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
             }
             createFaces(vhandle, true);
 
@@ -465,24 +467,16 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
 }*/
 
 void Skeleton::createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode) {
-    cout << vhandle.size() << endl;
     BMesh& m = mesh.getMesh();
     std::vector<BMesh::VertexHandle> face_vhandles;
     int last = vhandle.size()-1;
     // Face du dessus
     face_vhandles.clear();
     face_vhandles.push_back(vhandle[last-7]);
-    cout << "last - 7 " << vhandle[last-7] << endl;
     face_vhandles.push_back(vhandle[last-6]);
-    cout << "last - 6 " << vhandle[last-6] << endl;
     face_vhandles.push_back(vhandle[last-2]);
-    cout << "last - 2 " << vhandle[last-2] << endl;
     face_vhandles.push_back(vhandle[last-3]);
-    cout << "last - 3 " << vhandle[last-3] << endl;
-    cout << face_vhandles.size() << endl;
     m.add_face(face_vhandles);
-
-    cout << "dessus" << endl;
 
     // Face devant
     face_vhandles.clear();
@@ -517,7 +511,6 @@ void Skeleton::createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNo
         face_vhandles.push_back(vhandle[last]);
         m.add_face(face_vhandles);
     }
-    printf("fin createface\n");
 }
 
 std::vector<Sphere*>& Skeleton::getBalls() {
@@ -586,6 +579,12 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
     file.close();
 
     setNeighbors();
+
+    for (unsigned int i = 0; i < balls.size(); i++) {
+        if (balls[i]->valence() == 1) {
+            cout << i << endl;
+        }
+    }
 
     return true;
 }

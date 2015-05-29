@@ -16,6 +16,7 @@ public:
     void init(Viewer &);
     void draw();
 
+    void sweeping();
     void addBall(Sphere* s);
     void addEdge(Segment* sg);
 
@@ -40,7 +41,6 @@ private:
     void setNeighbors();
     std::vector<float> splitSpaces(const std::string &s);
     void interpolation();
-    void sweeping();
     void sweepVoisin(int origin, int neighbor);
     void createFaces(Segment* sg);
     void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
