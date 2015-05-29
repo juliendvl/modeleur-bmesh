@@ -12,6 +12,7 @@ class Skeleton : public Renderable
 {
 public:
     Skeleton();
+    Skeleton(const Skeleton &s);
     ~Skeleton();
     void init(Viewer &);
     void draw();

@@ -1,3 +1,7 @@
+/**
+ * @brief Main Window (GUI)
+ * */
+
 #ifndef DEF_WINDOW
 #define DEF_WINDOW
 

@@ -11,13 +11,13 @@ class MeshEvolve
 {
 
 public:
-    MeshEvolve(Mesh &mesh, Skeleton &s);
+    MeshEvolve(Mesh &mesh, Skeleton *s);
 
     bool evolve();
 
 private:
     BMesh m;
-    Skeleton s;
+    Skeleton *s;
 
     OpenMesh::Vec3f scalarNormal(const OpenMesh::Vec3f &p);
     float fi(const Sphere *s, const OpenMesh::Vec3f &p);

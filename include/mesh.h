@@ -14,6 +14,7 @@ class Mesh : public Renderable
 
 public:
     Mesh();
+    Mesh(const Mesh &m);
     ~Mesh();
 
     BMesh& getMesh();

@@ -10,6 +10,16 @@ Skeleton::Skeleton() : drawBetween(false)
 {
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+Skeleton::Skeleton(const Skeleton &s) {
+    this->balls = s.balls;
+    this->edges = s.edges;
+    this->drawBetween = s.drawBetween;
+    this->mesh = Mesh(s.mesh);
+}
+
+
 Skeleton::~Skeleton() {
     for(std::vector<Sphere*>::iterator it = balls.begin() ; it != balls.end(); it++){
         Sphere* s = *it;
@@ -646,7 +656,8 @@ std::ostream& operator<<(std::ostream &out, const Skeleton &s) {
     std::vector< std::vector<Segment*> > e = s.getEdges();
     for (unsigned int i = 0; i < e.size(); i++) {
         for (unsigned int j = 0; j < e.size(); j++) {
-            out << *(e[i][j]) << endl;
+            if (e[i][j] != NULL)
+                out << *(e[i][j]) << endl;
         }
     }
 

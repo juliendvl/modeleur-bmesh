@@ -9,7 +9,7 @@ using OpenMesh::Vec3f;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton &s) {
+MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s) {
     this->m = mesh.getMesh();
     this->s = s;
 }
@@ -18,12 +18,18 @@ MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton &s) {
 ///////////////////////////////////////////////////////////////////////////////
 bool MeshEvolve::evolve() {
     const float EPS = 1e-3;
-    const float DT  = 0.05; // Fixed at first
+    const float DT  = 1; // Fixed at first
     BMesh::VertexIter vit;
+    BMesh::VertexVertexIter vv;
 
     list<BMesh::VertexHandle> points;
-    for (vit = m.vertices_begin(); vit != m.vertices_end(); ++vit)
-        points.push_back(*vit);
+    for (vit = m.vertices_begin(); vit != m.vertices_end(); ++vit) {
+        int k = 0;
+        for (vv = m.vv_iter(*vit); vv.is_valid(); ++vv)
+            k++;
+        if (k >= 3)
+            points.push_back(*vit);
+    }
 
     // While there are points which need to evolve
     while (points.size() != 0) {
@@ -36,7 +42,6 @@ bool MeshEvolve::evolve() {
             Vec3f sn = scalarNormal(p);
 
             // We get the vertex's neighbors
-            BMesh::VertexVertexIter vv;
             vector<BMesh::VertexHandle> neighbors;
             for (vv = m.vv_iter(*lit); vv.is_valid(); ++vv)
                 neighbors.push_back(*vv);
@@ -61,7 +66,7 @@ bool MeshEvolve::evolve() {
         for (it = pts.begin(); it != pts.end(); ++it) {
             m.set_point(it.key(), it.value());
 
-            if (scalarField(it.value()) < EPS)
+            if (fabs(scalarField(it.value())) < EPS)
                 points.remove(it.key());
         }
     }
@@ -84,7 +89,9 @@ Vec3f MeshEvolve::scalarNormal(const Vec3f &p) {
     float nz = (scalarField(p + dz) - scalarField(p - dz)) / (2*DP);
 
     Vec3f n(-nx, -ny, -nz);
-    n.normalize();
+
+    if (n.norm() >= 1e-4)
+        n.normalize();
 
     return n;
 }
@@ -111,7 +118,7 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
 
 ///////////////////////////////////////////////////////////////////////////////
 float MeshEvolve::scalarField(const Vec3f &p) {
-    vector<Sphere*> balls = s.getBalls();
+    vector<Sphere*> balls = s->getBalls();
     float res = 0.0;
     const float T = 0.3;
 

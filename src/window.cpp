@@ -204,7 +204,10 @@ void Window::subdivide() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::evolve() {
-    // TODO: process mesh evolution
+    //MeshEvolve me(skel->getMesh(), skel);
+
+    //if (!me.evolve())
+      //  QMessageBox::critical(this, "Error", "Evolution failed !");
 
     evol->setEnabled(false);
     fair->setEnabled(true);
@@ -219,13 +222,20 @@ void Window::fairing() {
         QMessageBox::critical(this, "Error", "Fairing failed !");
 
     fair->setEnabled(false);
-    sweep->setEnabled(true);
-    nbIter->setEnabled(true);
-    goSub->setEnabled(true);
+    catmullClark->setEnabled(true);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::doAll() {
     int nbSub = nbIter->value();
+
+    doSweep();
+    doStitch();
+
+    for (int i = 0; i < nbSub; ++i) {
+        subdivide();
+        evolve();
+        fairing();
+    }
 }
