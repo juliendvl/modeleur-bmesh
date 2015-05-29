@@ -286,8 +286,13 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         axe_x = Vec3f(x1,y1,z1);
         axe_x.normalize();
         if ((x1 == 0) && (y1 == 0)) {
-            axe_y = Vec3f(1,0,0);
-            axe_z = Vec3f(0,1,0);
+            if (z1 > 0) {
+                axe_y = Vec3f(1,0,0);
+                axe_z = Vec3f(0,1,0);
+            } else {
+                axe_y = Vec3f(1,0,0);
+                axe_z = Vec3f(0,-1,0);
+            }
         } else {
             axe_y = (axe_Z % axe_x);
             axe_y.normalize();
