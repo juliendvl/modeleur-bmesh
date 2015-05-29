@@ -282,8 +282,6 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
     Vec3f axe_Z(0,0,1);
     // If it hasn't been sweeped
     if (!n->getSweeped()) {
-        printf("o = %i, n = %i\n", origin, neighbor);
-        printf("valo = %i, valn = %i\n", o->valence(), n->valence());
         // If it is an end or connection node, it is sweeped
         if ((n->valence() == 1) || (n->valence() == 2)) {
             n->setSweeped(true);
@@ -298,8 +296,13 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         axe_x = Vec3f(x1,y1,z1);
         axe_x.normalize();
         if ((x1 == 0) && (y1 == 0)) {
-            axe_y = Vec3f(1,0,0);
-            axe_z = Vec3f(0,1,0);
+            if (z1 > 0) {
+                axe_y = Vec3f(1,0,0);
+                axe_z = Vec3f(0,1,0);
+            } else {
+                axe_y = Vec3f(1,0,0);
+                axe_z = Vec3f(0,-1,0);
+            }
         } else {
             axe_y = (axe_Z % axe_x);
             axe_y.normalize();
@@ -314,7 +317,6 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         }
 
         std::vector<Sphere*> inbetweenballs = sg->getInBetweenBalls();
-        printf("size = %i\n", inbetweenballs.size());
         if (inbetweenballs.size() > 0) {
             Sphere* b = inbetweenballs[0];
             cx = b->getX();
@@ -590,11 +592,11 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
 
     setNeighbors();
 
-    for (unsigned int i = 0; i < balls.size(); i++) {
+    /*for (unsigned int i = 0; i < balls.size(); i++) {
         if (balls[i]->valence() == 1) {
             cout << i << endl;
         }
-    }
+    }*/
 
     return true;
 }
