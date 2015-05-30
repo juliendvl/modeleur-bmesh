@@ -99,6 +99,8 @@ private:
 
     Skeleton *skel;
 
+    bool saveMeshOK;
+
     void initGUI();
 
 };

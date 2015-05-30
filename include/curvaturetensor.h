@@ -1,7 +1,3 @@
-/**
- * @brief Class which computes Weingarten matrix
- * */
-
 #ifndef DEF_CURVATURETENSOR
 #define DEF_CURVATURETENSOR
 
@@ -10,7 +6,9 @@
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
-
+/**
+ * @brief Compute the curvature tensor in a point p
+ */
 class CurvatureTensor
 {
 

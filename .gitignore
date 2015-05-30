@@ -28,3 +28,6 @@ modeleur-bmesh
 modeleur-bmesh.pro.user
 moc_*
 .qglviewer.xml
+
+doc/doxygen_sqlite3.db
+doc/html/

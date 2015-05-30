@@ -151,14 +151,3 @@ vector<Vec3f> EdgeFairing::projection(const BMesh::VertexHandle &o,
 
     return res;
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-float EdgeFairing::min(float a, float b) {
-    return (a < b) ? a : b;
-}
-
-float EdgeFairing::max(float a, float b) {
-    return (a < b) ? b : a;
-}
-

@@ -6,25 +6,30 @@
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
-
+/**
+ * @brief Edge Fairing (step 5 of the B-Mesh algorithm)
+ */
 class EdgeFairing
 {
 
 public:
-    bool fairing();
-
+    /**
+     * @brief Constructor
+     * @param mesh Mesh to work with
+     */
     EdgeFairing(Mesh &mesh);
+
+    /**
+     * @brief Processes edge fairing
+     * @return true if edge fairing succeed; false otherwise
+     */
+    bool fairing();
 
 private:
     BMesh m;
 
     std::vector<OpenMesh::Vec3f> projection(const BMesh::VertexHandle &o,
                   const std::vector<BMesh::VertexHandle> &v);
-
-    float min(float a, float b);
-    float max(float a, float b);
-
-
 };
 
 

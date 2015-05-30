@@ -1,8 +1,9 @@
 #ifndef CYLINDER_H
 #define CYLINDER_H
 
-#include "QGLViewer/qglviewer.h"
+#include <QGLViewer/qglviewer.h>
 #include "renderable.h"
+
 
 class Cylinder : public Renderable
 {

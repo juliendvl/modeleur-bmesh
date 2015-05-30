@@ -6,49 +6,114 @@
 #include "segment.h"
 #include "mesh.h"
 
-/* Classe du squelette */
-
+/**
+ * @brief Defines a skeleton
+ */
 class Skeleton : public Renderable
 {
-public:
-    Skeleton();
-    Skeleton(const Skeleton &s);
-    ~Skeleton();
-    void init(Viewer &);
-    void draw();
 
-    void sweeping();
+public:
+    /**
+     * @brief Default constructor
+     */
+    Skeleton();
+
+    /**
+     * @brief Copy constructor
+     * @param s skeleton to copy
+     */
+    Skeleton(const Skeleton &s);
+
+    ~Skeleton();
+
+    /**
+     * @brief Adds a ball in the skeleton
+     * @param s Ball to add
+     */
     void addBall(Sphere* s);
+
+    /**
+     * @brief Adds an edge in the skeleton
+     * @param sg edge to add
+     */
     void addEdge(Segment* sg);
 
+    // A COMMENTER
+    bool betweenBalls();
+
+    /**
+     * @brief Draws the skeleton
+     */
+    void draw();
+
+    /**
+     * @brief Inits the skeleton
+     */
+    void init(Viewer &);
+
+    /**
+     * @brief  Returns balls composing the skeleton (nodes)
+     * @return balls composing the skeleton
+     */
     std::vector<Sphere*>& getBalls();
-    std::vector< std::vector<Segment*> >& getEdges();
+
+    /**
+     * @brief  Returns balls composing the skeleton (nodes)
+     * @return balls composing the skeleton
+     */
     std::vector<Sphere*> getBalls() const;
+
+    /**
+     * @brief  Returns edges composing the skeleton
+     * @return edges composing the skeleton
+     */
+    std::vector< std::vector<Segment*> >& getEdges();
+
+    /**
+     * @brief  Returns edges composing the skeleton
+     * @return edges composing the skeleton
+     */
     std::vector< std::vector<Segment*> > getEdges() const;
 
-    bool betweenBalls();
-    void setBetweenBalls(bool draw);
+    /**
+     * @brief  Returns the mesh linked with the skeleton
+     * @return OpenMesh mesh
+     */
+    Mesh& getMesh();
 
+    /**
+     * @brief Loads a skeleton from a .txt file
+     * @param fileName file to load
+     * @return true if loading succeed; false otherwise
+     */
     bool loadFromFile(const std::string &fileName);
 
-    Mesh& getMesh();
+    // A COMMENTER
+    void setBetweenBalls(bool draw);
+
+    /**
+     * @brief Performs sweeping
+     */
+    void sweeping();
 
 
 private:
-    std::vector<Sphere*> balls;     // Balls
-    std::vector< std::vector<Segment*> > edges;    // Edges
+    std::vector<Sphere*> balls;                 // Balls
+    std::vector< std::vector<Segment*> > edges; // Edges
+
     // true if we want to draw inbetween-balls; false otherwise
     bool drawBetween;
-    Mesh mesh;
 
-    void setNeighbors();
-    std::vector<float> splitSpaces(const std::string &s);
-    void interpolation();
-    void sweepVoisin(int origin, int neighbor);
+    Mesh mesh;
+    std::vector<Sphere*> pointsMesh;
+
+    // PRIVATE METHODS
     void createFaces(Segment* sg);
     void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
-
-    std::vector<Sphere*> pointsMesh;
+    void setNeighbors();
+    void interpolation();
+    std::vector<float> splitSpaces(const std::string &s);
+    void sweepVoisin(int origin, int neighbor);
 
 };
 

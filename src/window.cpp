@@ -10,12 +10,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 Window::Window() : QWidget() {
 
-    initGUI();
-
-    //Dragon *d = new Dragon();
-    //viewer->addRenderable(d);
-
     this->skel = NULL;
+
+    initGUI();
 }
 
 
@@ -33,6 +30,7 @@ void Window::initGUI() {
 
     this->loadSkeleton = new QPushButton("Load skeleton");
     this->saveMesh     = new QPushButton("Save mesh");
+    saveMesh->setEnabled(false);
 
     this->showBetween  = new QPushButton("Show inbetween-balls");
     this->sweep        = new QPushButton("Sweeping");
@@ -154,6 +152,7 @@ void Window::load() {
     viewer->update();
 
     // We can allow the user to click other buttons
+    saveMesh->setEnabled(false);
     sweep->setEnabled(true);
     stitch->setEnabled(false);
     catmullClark->setEnabled(false);
@@ -166,13 +165,13 @@ void Window::load() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::doSweep() {
-    // TODO: process sweeping
+    skel->sweeping();
 
+    saveMesh->setEnabled(true);
     sweep->setEnabled(false);
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
     stitch->setEnabled(true);
-    skel->sweeping();
 }
 
 
@@ -188,7 +187,14 @@ void Window::doStitch() {
 void Window::save() {
     QString fileName = QFileDialog::getSaveFileName(this, "Same mesh",
                                        QString(), "Object file (*.obj)");
-    QMessageBox::information(this, "Info", "Not yet implemented !");
+
+    if (fileName.isEmpty())
+        return;
+
+    if (!skel->getMesh().saveMesh(fileName.toStdString())) {
+        QMessageBox::critical(this, "Error", "Unable to save mesh !");
+        return;
+    }
 }
 
 

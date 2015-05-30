@@ -7,12 +7,25 @@
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
+
+/**
+ * @brief Mesh Evolution (step 4 of the B-Mesh algorithm)
+ */
 class MeshEvolve
 {
 
 public:
+    /**
+     * @brief Constructor
+     * @param mesh Mesh to work with
+     * @param s    Skeleton to work with
+     */
     MeshEvolve(Mesh &mesh, Skeleton *s);
 
+    /**
+     * @brief  Processes mesh evolution
+     * @return true if mesh evolution suceed; false otherwise
+     */
     bool evolve();
 
 private:

@@ -1,19 +1,28 @@
-#include "sphere.h"
 #include <stdexcept>
+#ifndef __APPLE__
+    #include <GL/glut.h>
+#else
+    #include <GLUT/glut.h>
+#endif
 
-
+#include "sphere.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-Sphere::Sphere(float x, float y, float z, float radius, float r, float g, float b) : sweeped(false) {
+Sphere::Sphere(float x, float y, float z, float radius,
+               float r, float g, float b) : sweeped(false)
+{
     this->x = x;
     this->y = y;
     this->z = z;
+
     if (radius < 0)
         std::invalid_argument("Radius must not be negative");
     this->radius = radius;
+
     this->r = r;
     this->g = g;
     this->b = b;
+
     this->neighbors = std::vector<int>();
 }
 
