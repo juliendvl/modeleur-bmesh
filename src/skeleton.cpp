@@ -53,6 +53,9 @@ void Skeleton::draw() {
         // indexes ! So you could see some end nodes which seem to be
         // joint or connection nodes
         switch (s->valence()) {
+        case 0:
+            s->setColor(0.0, 1.0, 0.0);
+            break;
         case 1:
             s->setColor(1.0, 1.0, 0.0);
             break;
@@ -517,14 +520,14 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
 
     setNeighbors();
 
-    for (unsigned int i = 0; i < balls.size(); i++) {
+    /*for (unsigned int i = 0; i < balls.size(); i++) {
         Sphere* s = balls[i];
         if (balls[i]->valence() == 1) {
             cout << "end = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
-        } /*else if (balls[i]->valence() == 2) {
+        } else if (balls[i]->valence() == 2) {
             cout << "connection = " << i << endl;
-        }*/
-    }
+        }
+    }*/
 
     return true;
 }
