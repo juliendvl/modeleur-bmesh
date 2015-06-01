@@ -1,3 +1,7 @@
+/**
+ * @brief Main Window (GUI)
+ * */
+
 #ifndef DEF_WINDOW
 #define DEF_WINDOW
 
@@ -94,6 +98,8 @@ private:
     Viewer *viewer;
 
     Skeleton *skel;
+
+    bool saveMeshOK;
 
     void initGUI();
 
