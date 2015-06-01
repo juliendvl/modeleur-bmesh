@@ -29,7 +29,7 @@ public:
     bool evolve();
 
 private:
-    BMesh m;
+    BMesh *m;
     Skeleton *s;
 
     OpenMesh::Vec3f scalarNormal(const OpenMesh::Vec3f &p);

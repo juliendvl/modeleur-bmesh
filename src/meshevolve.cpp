@@ -10,22 +10,22 @@ using OpenMesh::Vec3f;
 
 ///////////////////////////////////////////////////////////////////////////////
 MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s) {
-    this->m = mesh.getMesh();
+    this->m = mesh.getPMesh();
     this->s = s;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 bool MeshEvolve::evolve() {
-    const float EPS = 1e-3;
+    const float EPS = 0.3;
     const float DT  = 1; // Fixed at first
     BMesh::VertexIter vit;
     BMesh::VertexVertexIter vv;
 
     list<BMesh::VertexHandle> points;
-    for (vit = m.vertices_begin(); vit != m.vertices_end(); ++vit) {
+    for (vit = m->vertices_begin(); vit != m->vertices_end(); ++vit) {
         int k = 0;
-        for (vv = m.vv_iter(*vit); vv.is_valid(); ++vv)
+        for (vv = m->vv_iter(*vit); vv.is_valid(); ++vv)
             k++;
         if (k >= 3)
             points.push_back(*vit);
@@ -38,16 +38,16 @@ bool MeshEvolve::evolve() {
         list<BMesh::VertexHandle>::iterator lit;
 
         for (lit = points.begin(); lit != points.end(); ++lit) {
-            Vec3f p  = m.point(*lit);
+            Vec3f p  = m->point(*lit);
             Vec3f sn = scalarNormal(p);
 
             // We get the vertex's neighbors
             vector<BMesh::VertexHandle> neighbors;
-            for (vv = m.vv_iter(*lit); vv.is_valid(); ++vv)
+            for (vv = m->vv_iter(*lit); vv.is_valid(); ++vv)
                 neighbors.push_back(*vv);
 
             // We get the principal curvatures
-            CurvatureTensor ct(m);
+            CurvatureTensor ct(*m);
             ct.compute(*lit, neighbors);
             vector<float> curv = ct.getCurvatures();
 
@@ -64,14 +64,14 @@ bool MeshEvolve::evolve() {
         // need to evolve anymore
         QMap<BMesh::VertexHandle, Vec3f>::iterator it;
         for (it = pts.begin(); it != pts.end(); ++it) {
-            m.set_point(it.key(), it.value());
+            m->set_point(it.key(), it.value());
 
             if (fabs(scalarField(it.value())) < EPS)
                 points.remove(it.key());
         }
     }
 
-    m.update_normals();
+    m->update_normals();
     return true;
 }
 
@@ -120,7 +120,19 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
 float MeshEvolve::scalarField(const Vec3f &p) {
     vector<Sphere*> balls = s->getBalls();
     float res = 0.0;
-    const float T = 0.3;
+    const float T = 0.25;
+
+    // We also get inbetween balls
+    vector< vector<Segment*> > e = s->getEdges();
+    for (unsigned int i = 0; i < e.size(); ++i) {
+        for (unsigned int j = 0; j < e.size(); ++j) {
+            if (e[i][j] != NULL) {
+                vector<Sphere*> bb = e[i][j]->getInBetweenBalls();
+                balls.insert(balls.end(), bb.begin(), bb.end());
+            }
+        }
+    }
+
 
     for (unsigned int i = 0; i < balls.size(); i++)
         res += fi(balls[i], p);
