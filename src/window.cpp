@@ -210,10 +210,10 @@ void Window::subdivide() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::evolve() {
-    //MeshEvolve me(skel->getMesh(), skel);
+    MeshEvolve me(skel->getMesh(), skel);
 
-    //if (!me.evolve())
-      //  QMessageBox::critical(this, "Error", "Evolution failed !");
+    if (!me.evolve())
+        QMessageBox::critical(this, "Error", "Evolution failed !");
 
     evol->setEnabled(false);
     fair->setEnabled(true);

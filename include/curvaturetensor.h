@@ -50,6 +50,10 @@ public:
      */
     std::vector<OpenMesh::Vec2f> getOMDirections() const;
 
+    Eigen::Matrix3f passMatrix();
+
+    Eigen::Matrix3f passInvMatrix();
+
 private:
     BMesh m;
     BMesh::VertexHandle p;
@@ -57,6 +61,11 @@ private:
 
     std::vector<float> curvatures;
     std::vector<Eigen::Vector2f> directions;
+
+    Eigen::Matrix3f P;
+    Eigen::Matrix3f InvP;
+
+    Eigen::Vector3f project(const Eigen::Vector3f &p);
 
     std::vector<Eigen::Vector3f> getTangentPlane();
 };

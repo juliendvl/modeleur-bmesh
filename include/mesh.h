@@ -39,6 +39,8 @@ public:
      */
     BMesh& getMesh();
 
+    BMesh* getPMesh();
+
     void draw();
 
     /**

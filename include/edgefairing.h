@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "mesh.h"
+#include "omeigen.h"
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
@@ -26,9 +27,9 @@ public:
     bool fairing();
 
 private:
-    BMesh m;
+    BMesh *m;
 
-    std::vector<OpenMesh::Vec3f> projection(const BMesh::VertexHandle &o,
+    std::vector<Eigen::Vector3f> projection(const BMesh::VertexHandle &o,
                   const std::vector<BMesh::VertexHandle> &v);
 };
 

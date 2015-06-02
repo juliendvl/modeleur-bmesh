@@ -33,15 +33,30 @@ bool CurvatureTensor::compute(const BMesh::VertexHandle &p,
     Vector3f p0 = OMEigen::toEigen(m.point(neighbors[1]));
     Vector3f p1 = OMEigen::toEigen(m.point(neighbors[2]));
 
-    float n0u = (n0 - nx).dot(tp[0]);
-    float n0v = (n0 - nx).dot(tp[1]);
-    float n1u = (n1 - nx).dot(tp[0]);
-    float n1v = (n1 - nx).dot(tp[1]);
+    Vector3f pe0 = project(p0 - px);
+    Vector3f pe1 = project(p1 - px);
 
-    float e0u = (p0 - px).dot(tp[0]);
-    float e0v = (p0 - px).dot(tp[1]);
-    float e1u = (p1 - px).dot(tp[0]);
-    float e1v = (p1 - px).dot(tp[1]);
+
+    P << tp[0][0], tp[1][0], nx[0],
+         tp[0][1], tp[1][1], nx[1],
+         tp[0][2], tp[1][2], nx[2];
+    InvP = P.inverse();
+
+    nx  = InvP * nx;
+    n0  = InvP * n0;
+    n1  = InvP * n1;
+    pe0 = InvP * pe0;
+    pe1 = InvP * pe1;
+
+    float n0u = (n0 - nx)[0];
+    float n0v = (n0 - nx)[1];
+    float n1u = (n1 - nx)[0];
+    float n1v = (n1 - nx)[1];
+
+    float e0u = pe0[0];
+    float e0v = pe0[1];
+    float e1u = pe1[0];
+    float e1v = pe1[1];
 
     // We construct the linear system
     Matrix4f A;
@@ -70,6 +85,9 @@ bool CurvatureTensor::compute(const BMesh::VertexHandle &p,
     Matrix2cf evec = es.eigenvectors();
     directions.push_back(Vector2f(evec(0,0).real(), evec(0,1).real()));
     directions.push_back(Vector2f(evec(1,0).real(), evec(1,1).real()));
+
+    directions[0].normalize();
+    directions[1].normalize();
 
     return true;
 }
@@ -101,19 +119,39 @@ vector<Vec2f> CurvatureTensor::getOMDirections() const {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+Matrix3f CurvatureTensor::passMatrix() {
+    return P;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+Matrix3f CurvatureTensor::passInvMatrix() {
+    return InvP;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+Vector3f CurvatureTensor::project(const Vector3f &v) {
+    Vector3f pos  = OMEigen::toEigen(m.point(p));
+    Vector3f n    = OMEigen::toEigen(m.normal(p));
+    float norm    = n.norm();
+
+    float f = (v - pos).dot(n) / (norm*norm);
+    return (v - f*n);
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 vector<Vector3f> CurvatureTensor::getTangentPlane() {
     vector<Vector3f> res;
-
     Vector3f pos  = OMEigen::toEigen(m.point(p));
     Vector3f n    = OMEigen::toEigen(m.normal(p));
-    Vector3f nbor = OMEigen::toEigen(m.point(neighbors[0]));
-    float norm    = n.norm();
 
     // First, we must project ont neighbor in the tangent plane
-    float f = (nbor - pos).dot(n) / (norm*norm);
-    Vector3f pnbor = nbor - f*n;
+    Vector3f pnbor = project(OMEigen::toEigen(m.point(neighbors[0])));
 
     // "X" axis
     Vector3f xAxis = pnbor - pos;
