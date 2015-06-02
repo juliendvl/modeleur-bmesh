@@ -32,7 +32,7 @@ void Sphere::draw() {
     glPushMatrix();
     glTranslatef(this->x, this->y, this->z);
     glColor3f(this->r, this->g, this->b);
-    glutSolidSphere(this->radius, 10, 10);
+    glutSolidSphere(this->radius, 20, 20);
     glPopMatrix();
 }
 

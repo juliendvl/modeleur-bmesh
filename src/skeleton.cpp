@@ -66,7 +66,6 @@ void Skeleton::draw() {
             s->setColor(1.0, 0.0, 0.0);
             break;
         }
-
         s->draw();
         r = s->getRadius();
         if (r < r_min) {
@@ -522,13 +521,13 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
 
     /*for (unsigned int i = 0; i < balls.size(); i++) {
         Sphere* s = balls[i];
-        if (balls[i]->valence() == 1) {
-            cout << "end = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
-        } else if (balls[i]->valence() == 2) {
-            cout << "connection = " << i << endl;
+        //if (balls[i]->valence() == 1) {
+          //  cout << "end = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
+        //} else
+        if (balls[i]->valence() == 2) {
+            cout << "connection = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
         }
     }*/
-
     return true;
 }
 
