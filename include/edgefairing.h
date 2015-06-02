@@ -29,8 +29,6 @@ public:
 private:
     BMesh *m;
 
-    std::vector<Eigen::Vector3f> projection(const BMesh::VertexHandle &o,
-                  const std::vector<BMesh::VertexHandle> &v);
 };
 
 

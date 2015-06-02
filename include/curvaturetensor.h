@@ -7,7 +7,7 @@
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
 /**
- * @brief Compute the curvature tensor in a point p
+ * @brief Curvature tensor
  */
 class CurvatureTensor
 {
@@ -41,33 +41,23 @@ public:
      *        compute MUST be called before getEigenDirections
      * @return principal directions at point p
      */
-    std::vector<Eigen::Vector2f> getEigenDirections() const;
+    std::vector<Eigen::Vector2f> getDirections() const;
 
-    /**
-     * @brief Gets eigenvectors of W (in OpenMesh format).
-     *        compute MUST be called before getOMDirections
-     * @return principal directions at point p
-     */
-    std::vector<OpenMesh::Vec2f> getOMDirections() const;
 
-    Eigen::Matrix3f passMatrix();
+    std::vector<Eigen::Vector3f> tangentPlane() const;
 
-    Eigen::Matrix3f passInvMatrix();
 
 private:
     BMesh m;
     BMesh::VertexHandle p;
     std::vector<BMesh::VertexHandle> neighbors;
 
+    std::vector<Eigen::Vector3f> tp;
     std::vector<float> curvatures;
     std::vector<Eigen::Vector2f> directions;
 
-    Eigen::Matrix3f P;
-    Eigen::Matrix3f InvP;
-
-    Eigen::Vector3f project(const Eigen::Vector3f &p);
-
-    std::vector<Eigen::Vector3f> getTangentPlane();
+    std::vector<Eigen::Vector3f> getTangentPlane(const Eigen::Vector3f &px,
+                                                 const Eigen::Vector3f &nx);
 };
 
 #endif

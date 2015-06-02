@@ -1,7 +1,8 @@
 #include <iostream>
 #include <nlopt.hpp>
 #include "edgefairing.h"
-#include "include/curvaturetensor.h"
+#include "curvaturetensor.h"
+#include "mathutils.h"
 
 
 using namespace std;
@@ -56,8 +57,10 @@ bool EdgeFairing::fairing() {
 
     // We iterate over all vertices
     for (vit = m->vertices_begin(); vit != m->vertices_end(); ++vit) {
-        Vec3f p     = m->point(*vit);
+        Vec3f    p  = m->point(*vit);
         Vector3f ep = OMEigen::toEigen(p);
+        Vector3f n  = OMEigen::toEigen(m->normal(*vit));
+
         Vec3f newPt = Vec3f(0.0, 0.0, 0.0);
 
         // We get vertex neighbors
@@ -77,15 +80,21 @@ bool EdgeFairing::fairing() {
         // If vertex is valence 4
         if (neighbors.size() == 4 && (curv[0] != curv[1])) {
             // We get principal directions
-            vector<Vector2f> directions = ct.getEigenDirections();
+            vector<Vector2f> directions = ct.getDirections();
 
             // We project neighbors onto the tangent plane
-            vector<Vector3f> proj = projection(*vit, neighbors);
+            vector<Vector3f> proj(neighbors.size());
+            for (unsigned int i = 0; i < neighbors.size(); ++i) {
+                Vector3f v = OMEigen::toEigen(m->point(neighbors[i]));
+                proj.push_back(MathUtils::project(ep, v, n));
+            }
 
-            Matrix3f InvP = ct.passInvMatrix();
+            vector<Vector3f> tp = ct.tangentPlane();
             for (unsigned int i = 0; i < proj.size(); ++i) {
-                proj[i] -= ep;
-                proj[i] = InvP * proj[i];
+                Vector3f tmp = proj[i];
+                for (unsigned int j = 0; j < 3; ++j) {
+                    proj[i][j] = (tmp).dot(tp[j]);
+                }
             }
 
             // Init data structure
@@ -107,14 +116,14 @@ bool EdgeFairing::fairing() {
             double minf;
             o.optimize(x, minf);
 
-            //cout << x[0] << " " << x[1] << endl;
-
             Vector3f tmp(x[0], x[1], 0.0);
-            Matrix3f P = ct.passMatrix();
-            tmp = P * tmp;
+            Matrix3f P;
+            P << tp[0][0], tp[1][0], tp[2][0],
+                 tp[0][1], tp[1][1], tp[2][1],
+                 tp[0][2], tp[1][2], tp[2][2];
+            tmp = P * tmp + ep;
 
-            //newPt = p;
-            newPt = OMEigen::toOpenMesh(tmp) + p;
+            newPt = OMEigen::toOpenMesh(tmp);
         }
         else {
             /**
@@ -142,26 +151,4 @@ bool EdgeFairing::fairing() {
     }
 
     return true;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-vector<Vector3f> EdgeFairing::projection(const BMesh::VertexHandle &o,
-                                      const vector<BMesh::VertexHandle> &v)
-{
-    vector<Vector3f> res;
-
-    Vec3f pos  = m->point(o);
-    Vec3f n    = m->normal(o);
-    float norm = n.norm();
-
-    for (unsigned int i = 0; i < v.size(); i++) {
-        Vec3f p = m->point(v[i]);
-
-        // | is the OpenMesh scalar product
-        float f = ( (p - pos) | n ) / (norm * norm);
-        res.push_back(OMEigen::toEigen(p - f * n));
-    }
-
-    return res;
 }

@@ -1,6 +1,3 @@
-/**
-  * @brief
-  */
 #ifndef DEF_OMEIGEN
 #define DEF_OMEIGEN
 
@@ -8,6 +5,9 @@
 #include <Eigen/Dense>
 
 
+/**
+ * @brief Eigen/OpenMesh vectors conversion methods
+ */
 class OMEigen
 {
 

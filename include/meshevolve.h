@@ -36,7 +36,6 @@ private:
     float fi(const Sphere *s, const OpenMesh::Vec3f &p);
     float scalarField(const OpenMesh::Vec3f &p);
 
-    float absf(float a);
 };
 
 #endif

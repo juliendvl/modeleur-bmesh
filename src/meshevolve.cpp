@@ -2,7 +2,7 @@
 #include <list>
 #include <QMap>
 #include "meshevolve.h"
-#include "include/curvaturetensor.h"
+#include "curvaturetensor.h"
 
 using namespace std;
 using OpenMesh::Vec3f;
@@ -17,7 +17,7 @@ MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s) {
 
 ///////////////////////////////////////////////////////////////////////////////
 bool MeshEvolve::evolve() {
-    const float EPS = 0.3;
+    const float EPS = 0.20;
     const float DT  = 1; // Fixed at first
     BMesh::VertexIter vit;
     BMesh::VertexVertexIter vv;
@@ -52,7 +52,7 @@ bool MeshEvolve::evolve() {
             vector<float> curv = ct.getCurvatures();
 
             // We compute the f function
-            float f = 1.0 / (1.0 + absf(curv[0]) + absf(curv[1]));
+            float f = 1.0 / (1.0 + fabs(curv[0]) + fabs(curv[1]));
             float F = scalarField(p) * f;
 
             // We compute the new point
@@ -120,7 +120,7 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
 float MeshEvolve::scalarField(const Vec3f &p) {
     vector<Sphere*> balls = s->getBalls();
     float res = 0.0;
-    const float T = 0.25;
+    const float T = 0.15;
 
     // We also get inbetween balls
     vector< vector<Segment*> > e = s->getEdges();
@@ -138,11 +138,4 @@ float MeshEvolve::scalarField(const Vec3f &p) {
         res += fi(balls[i], p);
 
     return (res - T);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-float MeshEvolve::absf(float a) {
-    return (a >= 0) ? a : (-a);
 }
