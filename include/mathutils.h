@@ -18,9 +18,13 @@ public:
      * @param n Normal
      * @return  Projected point
      */
-    static Eigen::Vector3f project(const Eigen::Vector3f &o,
-                                   const Eigen::Vector3f &p,
-                                   const Eigen::Vector3f &n);
+    static Eigen::Vector3f projectPoint(const Eigen::Vector3f &o,
+                                        const Eigen::Vector3f &p,
+                                        const Eigen::Vector3f &n);
+
+
+    static Eigen::Vector3f projectVector(const Eigen::Vector3f &v,
+                                         const Eigen::Vector3f &n);
 };
 
 #endif
