@@ -86,7 +86,7 @@ bool EdgeFairing::fairing() {
             vector<Vector3f> proj(neighbors.size());
             for (unsigned int i = 0; i < neighbors.size(); ++i) {
                 Vector3f v = OMEigen::toEigen(m->point(neighbors[i]));
-                proj.push_back(MathUtils::project(ep, v, n));
+                proj.push_back(MathUtils::projectPoint(ep, v, n));
             }
 
             vector<Vector3f> tp = ct.tangentPlane();
@@ -134,9 +134,7 @@ bool EdgeFairing::fairing() {
             newPt /= neighbors.size();
 
             Vec3f n = m->normal(*vit);
-            float norm = n.norm();
-
-            float f = ( (newPt - p) | n ) / (norm * norm);
+            float f = ( (newPt - p) | n );
             newPt = newPt - f * n;
         }
 

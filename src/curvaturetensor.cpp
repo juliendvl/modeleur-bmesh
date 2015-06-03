@@ -38,31 +38,31 @@ bool CurvatureTensor::compute(const BMesh::VertexHandle &p,
     float n0u = (n0 - nx).dot(tp[0]);
     float n0v = (n0 - nx).dot(tp[1]);
     float n1u = (n1 - nx).dot(tp[0]);
-    float n1v = (n1 - nx).dot(tp[1]);
 
-    float e0u = (p0 - px).dot(tp[0]);
-    float e0v = (p0 - px).dot(tp[1]);
-    float e1u = (p1 - px).dot(tp[0]);
-    float e1v = (p1 - px).dot(tp[1]);
+
+    Vector3f pe0 = MathUtils::projectVector(p0 - px, nx);
+    Vector3f pe1 = MathUtils::projectVector(p1 - px, nx);
+    float e0u = pe0.dot(tp[0]);
+    float e0v = pe0.dot(tp[1]);
+    float e1u = pe1.dot(tp[0]);
+    float e1v = pe1.dot(tp[1]);
 
 
     // We construct the linear system
-    Matrix4f A;
-    A << e0u, e0v,   0,   0,
-         e1u, e1v,   0,   0,
-         0  , 0  , e0u, e0v,
-         0  , 0  , e1u, e1v;
+    Matrix3f A;
+    A << e0u, e0v, 0,
+         0, e0u + e1u, e0v + e1v,
+         e1u, e1v, 0;
 
-    Vector4f B;
-    B << n0u, n1u, n0v, n1v;
+    Vector3f B;
+    B << n0u, n0v, n1u;
 
     // We solve the linear system
-    Vector4f X = A.jacobiSvd(ComputeFullU | ComputeFullV).solve(B);
+    Vector3f X = A.jacobiSvd(ComputeFullU | ComputeFullV).solve(B);
 
     // We construct the Weingarten matrix
     Matrix2f W;
-    W << X(0), X(1), X(2), X(3);
-    //cout << W << endl << endl;
+    W << X(0), X(1), X(1), X(2);
 
     // We set curvatures and directions
     EigenSolver<Matrix2f> es(W);
@@ -104,7 +104,7 @@ vector<Vector3f> CurvatureTensor::getTangentPlane(const Vector3f &px,
 
     // First, we must project ont neighbor in the tangent plane
     Vector3f pnbor = OMEigen::toEigen(m.point(neighbors[0]));
-    pnbor = MathUtils::project(px, pnbor, nx);
+    pnbor = MathUtils::projectPoint(px, pnbor, nx);
 
     // "X" axis
     Vector3f xAxis = pnbor - px;
@@ -117,6 +117,7 @@ vector<Vector3f> CurvatureTensor::getTangentPlane(const Vector3f &px,
     res.push_back(yAxis);
 
     res.push_back(nx);
+
 
     return res;
 }
