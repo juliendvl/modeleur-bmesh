@@ -17,12 +17,13 @@ MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s) {
 
 ///////////////////////////////////////////////////////////////////////////////
 bool MeshEvolve::evolve() {
-    const float EPS = 0.20;
-    const float DT  = 1; // Fixed at first
+    const float eps = 0.31;     // Threshold parameter
+    const float dt  = 1.0;      // Fixed at first
     BMesh::VertexIter vit;
     BMesh::VertexVertexIter vv;
-
     list<BMesh::VertexHandle> points;
+
+    // We only add points which need to evolve
     for (vit = m->vertices_begin(); vit != m->vertices_end(); ++vit) {
         int k = 0;
         for (vv = m->vv_iter(*vit); vv.is_valid(); ++vv)
@@ -33,47 +34,47 @@ bool MeshEvolve::evolve() {
 
     // While there are points which need to evolve
     while (points.size() != 0) {
-        Vec3f newPt;
-        QMap<BMesh::VertexHandle, Vec3f> pts;
+        QMap<BMesh::VertexHandle, Vec3f> ptsMap;
         list<BMesh::VertexHandle>::iterator lit;
 
         for (lit = points.begin(); lit != points.end(); ++lit) {
-            Vec3f p  = m->point(*lit);
-            Vec3f sn = scalarNormal(p);
+            Vec3f p = m->point(*lit);
 
-            // We get the vertex's neighbors
+            // We compute the curvature tensor and get the principal curvatures
             vector<BMesh::VertexHandle> neighbors;
             for (vv = m->vv_iter(*lit); vv.is_valid(); ++vv)
                 neighbors.push_back(*vv);
-
-            // We get the principal curvatures
             CurvatureTensor ct(*m);
             ct.compute(*lit, neighbors);
-            vector<float> curv = ct.getCurvatures();
+            vector<float> curvatures = ct.getCurvatures();
 
-            // We compute the f function
-            float f = 1.0 / (1.0 + fabs(curv[0]) + fabs(curv[1]));
+            // We compute the motion speed function
+            float f = 1.0 / (1.0 + fabs(curvatures[0]) + fabs(curvatures[1]));
             float F = scalarField(p) * f;
 
             // We compute the new point
-            newPt = p + F * DT * sn;
-            pts.insert(*lit, newPt);
+            Vec3f n = scalarNormal(p);
+            Vec3f newPt = p + n * F * dt;
+            ptsMap.insert(*lit, newPt);
         }
 
-        // We update vertex positions and we check if some vertex do not
-        // need to evolve anymore
-        QMap<BMesh::VertexHandle, Vec3f>::iterator it;
-        for (it = pts.begin(); it != pts.end(); ++it) {
-            m->set_point(it.key(), it.value());
+        // We update positions and check if some points do not need to
+        // evolve anymore
+        QMap<BMesh::VertexHandle, Vec3f>::iterator mit;
+        for (mit = ptsMap.begin(); mit != ptsMap.end(); ++mit) {
+            m->set_point(mit.key(), mit.value());
 
-            if (fabs(scalarField(it.value())) < EPS)
-                points.remove(it.key());
+            if ( scalarField(mit.value()) < eps )
+                points.remove(mit.key());
         }
     }
 
+    // We finally update normals
     m->update_normals();
+
     return true;
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,22 +121,20 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
 float MeshEvolve::scalarField(const Vec3f &p) {
     vector<Sphere*> balls = s->getBalls();
     float res = 0.0;
-    const float T = 0.15;
+    const float T = 0.2;
 
-    // We also get inbetween balls
-    vector< vector<Segment*> > e = s->getEdges();
+    // We first get all balls (key and in-between balls)
+    vector< vector<Segment*> >e = s->getEdges();
     for (unsigned int i = 0; i < e.size(); ++i) {
         for (unsigned int j = 0; j < e.size(); ++j) {
             if (e[i][j] != NULL) {
-                vector<Sphere*> bb = e[i][j]->getInBetweenBalls();
-                balls.insert(balls.end(), bb.begin(), bb.end());
+                vector<Sphere*> ibb = e[i][j]->getInBetweenBalls();
+                balls.insert(balls.end(), ibb.begin(), ibb.end());
             }
         }
     }
 
-
-    for (unsigned int i = 0; i < balls.size(); i++)
+    for (unsigned int i = 0; i < balls.size(); ++i)
         res += fi(balls[i], p);
-
     return (res - T);
 }

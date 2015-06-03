@@ -51,17 +51,15 @@ EdgeFairing::EdgeFairing(Mesh &mesh) {
 
 ///////////////////////////////////////////////////////////////////////////////
 bool EdgeFairing::fairing() {
-    vector<Vec3f> points;
+    QMap<BMesh::VertexHandle, Vec3f> points;
     BMesh::VertexIter vit;
     BMesh::VertexVertexIter vv;
 
     // We iterate over all vertices
     for (vit = m->vertices_begin(); vit != m->vertices_end(); ++vit) {
-        Vec3f    p  = m->point(*vit);
+        Vec3f p     = m->point(*vit);
         Vector3f ep = OMEigen::toEigen(p);
         Vector3f n  = OMEigen::toEigen(m->normal(*vit));
-
-        Vec3f newPt = Vec3f(0.0, 0.0, 0.0);
 
         // We get vertex neighbors
         vector<BMesh::VertexHandle> neighbors;
@@ -69,32 +67,34 @@ bool EdgeFairing::fairing() {
             neighbors.push_back(*vv);
 
         if (neighbors.size() < 3) {
-            points.push_back(p);
+            points.insert(*vit, p);
             continue;
         }
 
+        // We get curvature tensor
         CurvatureTensor ct(*m);
         ct.compute(*vit, neighbors);
         vector<float> curv = ct.getCurvatures();
 
         // If vertex is valence 4
-        if (neighbors.size() == 4 && (curv[0] != curv[1])) {
+        if ( neighbors.size() == 4 && (curv[0] != curv[1]) ) {
+            vector<Vector3f> tp = ct.tangentPlane();
+
             // We get principal directions
-            vector<Vector2f> directions = ct.getDirections();
+            vector<Vector2f> dir = ct.getDirections();
 
             // We project neighbors onto the tangent plane
-            vector<Vector3f> proj(neighbors.size());
+            vector<Vector3f> proj;
             for (unsigned int i = 0; i < neighbors.size(); ++i) {
-                Vector3f v = OMEigen::toEigen(m->point(neighbors[i]));
-                proj.push_back(MathUtils::projectPoint(ep, v, n));
+                Vector3f tmp = OMEigen::toEigen( m->point(neighbors[i]) );
+                proj.push_back( MathUtils::projectPoint(ep, tmp, n) );
             }
 
-            vector<Vector3f> tp = ct.tangentPlane();
+            // Frame transformation
             for (unsigned int i = 0; i < proj.size(); ++i) {
                 Vector3f tmp = proj[i];
-                for (unsigned int j = 0; j < 3; ++j) {
-                    proj[i][j] = (tmp).dot(tp[j]);
-                }
+                for (unsigned int j = 0; j < 3; ++j)
+                    proj[i][j] = (tmp-ep).dot(tp[j]);
             }
 
             // Init data structure
@@ -102,9 +102,7 @@ bool EdgeFairing::fairing() {
             Vector2f b(proj[1][0], proj[1][1]);
             Vector2f c(proj[2][0], proj[2][1]);
             Vector2f d(proj[3][0], proj[3][1]);
-            Vector2f ev = directions[0];
-            Vector2f eu = directions[1];
-            Data data = Data(a, b, c, d, eu, ev);
+            Data data = Data(a, b, c, d, dir[0], dir[1]);
 
             // Init non linear optimizer
             nlopt::opt o(nlopt::LN_COBYLA, 2);
@@ -116,37 +114,38 @@ bool EdgeFairing::fairing() {
             double minf;
             o.optimize(x, minf);
 
-            Vector3f tmp(x[0], x[1], 0.0);
+            // Frame transformation
+            Vector3f res(x[0], x[1], 0.0);
             Matrix3f P;
             P << tp[0][0], tp[1][0], tp[2][0],
                  tp[0][1], tp[1][1], tp[2][1],
                  tp[0][2], tp[1][2], tp[2][2];
-            tmp = P * tmp + ep;
 
-            newPt = OMEigen::toOpenMesh(tmp);
+            res = P * res + ep;
+            points.insert(*vit, OMEigen::toOpenMesh(res));
+
         }
         else {
-            /**
-             * Umbrella operator
-             * */
+            // Umbrella operator
+            Vec3f newPt = Vec3f(0.0, 0.0, 0.0);
             for (unsigned int i = 0; i < neighbors.size(); ++i)
                 newPt += m->point(neighbors[i]);
             newPt /= neighbors.size();
+            Vector3f tmp = OMEigen::toEigen(newPt);
 
-            Vec3f n = m->normal(*vit);
-            float f = ( (newPt - p) | n );
-            newPt = newPt - f * n;
+            // We project the point onto the tangent plane
+            Vector3f proj = MathUtils::projectPoint(ep, tmp, n);
+            points.insert(*vit, OMEigen::toOpenMesh(proj));
         }
-
-        points.push_back(newPt);
     }
 
-    // We update vertices positions
-    int i = 0;
-    for (vit = m->vertices_begin(); vit != m->vertices_end(); ++vit) {
-        m->set_point(*vit, points[i]);
-        i++;
+    // We update positions
+    QMap<BMesh::VertexHandle, Vec3f>::iterator mit;
+    for (mit = points.begin(); mit != points.end(); ++mit) {
+        m->set_point(mit.key(), mit.value());
     }
+
+    m->update_normals();
 
     return true;
 }
