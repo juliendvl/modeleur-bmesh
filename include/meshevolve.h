@@ -20,7 +20,7 @@ public:
      * @param mesh Mesh to work with
      * @param s    Skeleton to work with
      */
-    MeshEvolve(Mesh &mesh, Skeleton *s);
+    MeshEvolve(Mesh &mesh, Skeleton *s, int level = 1);
 
     /**
      * @brief  Processes mesh evolution
@@ -31,10 +31,17 @@ public:
 private:
     BMesh *m;
     Skeleton *s;
+    int level;
+    float step;
+
+    std::vector<Sphere*> balls;
 
     OpenMesh::Vec3f scalarNormal(const OpenMesh::Vec3f &p);
     float fi(const Sphere *s, const OpenMesh::Vec3f &p);
     float scalarField(const OpenMesh::Vec3f &p);
+
+    // Computes step (as defined in the article)
+    void computeStep();
 
 };
 

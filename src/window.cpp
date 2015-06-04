@@ -11,7 +11,7 @@
 Window::Window() : QWidget() {
 
     this->skel = NULL;
-
+    this->level = 1;
     initGUI();
 }
 
@@ -210,7 +210,8 @@ void Window::subdivide() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::evolve() {
-    MeshEvolve me(skel->getMesh(), skel);
+    MeshEvolve me(skel->getMesh(), skel, level);
+    level++;
 
     if (!me.evolve())
         QMessageBox::critical(this, "Error", "Evolution failed !");

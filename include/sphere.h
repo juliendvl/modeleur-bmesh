@@ -8,7 +8,7 @@
 /**
  * @brief Ball used for the skeleton
  */
-class Sphere : public Renderable
+class Sphere
 {
 
 public:

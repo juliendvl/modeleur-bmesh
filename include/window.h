@@ -99,6 +99,8 @@ private:
 
     Skeleton *skel;
 
+    int level;
+
     bool saveMeshOK;
 
     void initGUI();
