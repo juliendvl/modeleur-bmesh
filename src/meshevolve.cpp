@@ -34,7 +34,7 @@ MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s, int level) {
 
 ///////////////////////////////////////////////////////////////////////////////
 bool MeshEvolve::evolve() {
-    const float eps = 0.80;     // Threshold parameter
+    const float eps = 0.11;     // Threshold parameter
     float dt  = 1.0;            // Fixed at first
     BMesh::VertexIter vit;
     BMesh::VertexVertexIter vv;
@@ -44,8 +44,9 @@ bool MeshEvolve::evolve() {
         int k = 0;
         for (vv = m->vv_iter(*vit); vv.is_valid(); ++vv)
             k++;
-        if (k >= 3)
+        if (k >= 3 && (scalarField(m->point(*vit)) >= eps))
             points.push_back(*vit);
+
     }
 
     // While there are points which need to evolve
@@ -76,6 +77,8 @@ bool MeshEvolve::evolve() {
             if (mit.value() > Fmax)
                 Fmax = mit.value();
         dt = 0.75 * (step / Fmax);
+        //dt = 1.0;
+
 
 
         // We update positions and check if some points do not need to
@@ -112,7 +115,6 @@ Vec3f MeshEvolve::scalarNormal(const Vec3f &p) {
     float nz = (scalarField(p + dz) - scalarField(p - dz)) / (2*eps);
 
     Vec3f n(-nx, -ny, -nz);
-    cout << n << endl;
 
     if (n.norm() >= 1e-4)
         n.normalize();
@@ -143,7 +145,7 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
 ///////////////////////////////////////////////////////////////////////////////
 float MeshEvolve::scalarField(const Vec3f &p) {
     float res = 0.0;
-    const float T = 0.05;
+    const float T = 0.1;
 
     for (unsigned int i = 0; i < balls.size(); ++i)
         res += fi(balls[i], p);

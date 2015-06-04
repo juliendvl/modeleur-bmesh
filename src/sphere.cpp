@@ -1,3 +1,4 @@
+#include <iostream>
 #include <stdexcept>
 #ifndef __APPLE__
     #include <GL/glut.h>
