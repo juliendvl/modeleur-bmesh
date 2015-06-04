@@ -19,6 +19,7 @@ public:
      * @brief Constructor
      * @param mesh Mesh to work with
      * @param s    Skeleton to work with
+     * @param level Subdivision level
      */
     MeshEvolve(Mesh &mesh, Skeleton *s, int level = 1);
 
@@ -36,8 +37,13 @@ private:
 
     std::vector<Sphere*> balls;
 
+    // Computes n = -grad(I)/||grad(I)||, where I is a scalar field
     OpenMesh::Vec3f scalarNormal(const OpenMesh::Vec3f &p);
+
+    // Computes fi (as defined in the article
     float fi(const Sphere *s, const OpenMesh::Vec3f &p);
+
+    // Computes I (as defined in the article)
     float scalarField(const OpenMesh::Vec3f &p);
 
     // Computes step (as defined in the article)

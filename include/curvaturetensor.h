@@ -7,7 +7,7 @@
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
 /**
- * @brief Curvature tensor
+ * @brief Curvature tensor computation
  */
 class CurvatureTensor
 {
@@ -22,8 +22,8 @@ public:
     /**
      * @brief Computes the Weingarten matrix, and sets its eigenvalues and
      *        eigenvectors
-     * @param p Point where you need to compute the matrix
-     * @param neighbors p neighbors (necessary to compute W)
+     * @param  p         Point where you need to compute the matrix
+     * @param  neighbors p neighbors (necessary to compute W)
      * @return true if process succeed; false otherwise
      */
     bool compute(const BMesh::VertexHandle &p,
@@ -56,6 +56,13 @@ private:
     std::vector<float> curvatures;
     std::vector<Eigen::Vector2f> directions;
 
+
+    /**
+     * @brief Constructs the tangent plane frame
+     * @param px origin
+     * @param nx normal
+     * @return tangent plane
+     */
     std::vector<Eigen::Vector3f> getTangentPlane(const Eigen::Vector3f &px,
                                                  const Eigen::Vector3f &nx);
 };

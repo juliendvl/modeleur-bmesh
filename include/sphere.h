@@ -2,7 +2,6 @@
 #define DEF_SPHERE
 
 #include <vector>
-#include "renderable.h"
 
 
 /**

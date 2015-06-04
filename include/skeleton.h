@@ -56,11 +56,6 @@ public:
      * @return balls composing the skeleton
      */
     std::vector<Sphere*>& getBalls();
-
-    /**
-     * @brief  Returns balls composing the skeleton (nodes)
-     * @return balls composing the skeleton
-     */
     std::vector<Sphere*> getBalls() const;
 
     /**
@@ -68,11 +63,6 @@ public:
      * @return edges composing the skeleton
      */
     std::vector< std::vector<Segment*> >& getEdges();
-
-    /**
-     * @brief  Returns edges composing the skeleton
-     * @return edges composing the skeleton
-     */
     std::vector< std::vector<Segment*> > getEdges() const;
 
     /**
@@ -88,7 +78,10 @@ public:
      */
     bool loadFromFile(const std::string &fileName);
 
-    // A COMMENTER
+    /**
+     * @brief Indicates if we want to draw inbetween-balls
+     * @param draw true if we want to draw inbetween-balls; false otherwise
+     */
     void setBetweenBalls(bool draw);
 
     /**
