@@ -31,3 +31,11 @@ moc_*
 
 doc/doxygen_sqlite3.db
 doc/html/
+
+*.aux
+*.log
+*.nav
+*.pdf
+*.snm
+*.syntex.gz
+*.toc
