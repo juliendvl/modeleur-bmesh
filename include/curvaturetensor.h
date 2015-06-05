@@ -43,7 +43,10 @@ public:
      */
     std::vector<Eigen::Vector2f> getDirections() const;
 
-
+    /**
+     * @brief  Returns the tangent plane
+     * @return tangent plane
+     */
     std::vector<Eigen::Vector3f> tangentPlane() const;
 
 

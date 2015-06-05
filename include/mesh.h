@@ -58,6 +58,7 @@ public:
 private:
     BMesh *mesh;
 
+    // Gets the normal handle
     int getNormalIndex(const std::vector<OpenMesh::Vec3f> &v,
                        const OpenMesh::Vec3f &n);
 
