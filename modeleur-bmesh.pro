@@ -5,6 +5,8 @@ QT *= xml opengl
 INCLUDEPATH += src include Eigen/ nlopt/include/
 DEPENDPATH += src include
 
+QMAKE_CXXFLAGS += -O3
+DEFINES += EIGEN_NO_DEBUG
 HEADERS  = include/*.h
 SOURCES  = src/*.cpp
 

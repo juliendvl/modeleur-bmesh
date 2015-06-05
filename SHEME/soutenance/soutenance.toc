@@ -1,0 +1,4 @@
+\beamer@endinputifotherversion {3.33pt}
+\beamer@sectionintoc {1}{Pourquoi mod\IeC {\'e}liser avec des sph\IeC {\`e}res ?}{4}{0}{1}
+\beamer@sectionintoc {2}{Pr\IeC {\'e}sentation de l'outil}{5}{0}{2}
+\beamer@sectionintoc {3}{Algorithme}{7}{0}{3}
