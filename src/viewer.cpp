@@ -132,11 +132,30 @@ void Viewer::keyPressEvent(QKeyEvent *e)
 
 QString Viewer::helpString() const
 {
-    QString text("<h2>Modeleur 3D par Bmesh</h2><br>");
-    text += "Projet de specialite de deuxieme annee Ensimag<br>";
-    text += "Mai - Juin 2015<br>";
-    text += "Adapte de l'article <i>B-Mesh: A Fast Modeling System for Base ";
-    text += "Meshes of 3D Articulated Shapes</i><br>";
+    QString text("<h1>Modeleur 3d par B-Mesh</h1><br>");
+    text += "Julien Daval / Omid Ghorreshi<br/>";
+    text += "Projet de spécialité de deuxième année Ensimag<br/>";
+    text += "Mai/Juin 2015";
+
+    text += "<h2>Principe</h2>";
+    text += "<p>Ce programme permet de générer le maillage d'une forme 3D ";
+    text += "uniquement en spécifiant des sphères clés et les liens entre ";
+    text += "ces spères clés</p>";
+
+    text += "<h2>Fonctionnement</h2>";
+
+    text += "Le programme propose un certain nombre d'intéractions:";
+    text += "<ul>";
+    text += "<li><b>Load Skeleton: </b>Charge un squelette (au format .txt);</li>";
+    text += "<li><b>Save Mesh: </b>Sauvegarde le maillage généré (au format .obj);</li>";
+    text += "<li><b>Step by Step: </b>Permet de réaliser les différentes étapes de \
+             l'algorithme une par une;</li>";
+    text += "<li><b>All in One: </b>Générer tout d'un seul coup. On peut régler le \
+             nombre de subdivisions.</li>";
+    text += "</ul>";
+
+    text += "Les différents raccourcis disponibles sont fournis dans les ";
+    text += "<b>Keyboard</b> et <b>Mouse</b> de cette aide.";
 
     return text;
 }
