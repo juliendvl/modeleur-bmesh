@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdexcept>
+#include <QWheelEvent>
 #ifndef __APPLE__
     #include <GL/glut.h>
 #else
@@ -7,6 +8,11 @@
 #endif
 
 #include "sphere.h"
+
+
+using namespace std;
+using namespace qglviewer;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 Sphere::Sphere(float x, float y, float z, float radius,
@@ -17,7 +23,7 @@ Sphere::Sphere(float x, float y, float z, float radius,
     this->z = z;
 
     if (radius < 0)
-        std::invalid_argument("Radius must not be negative");
+        throw std::invalid_argument("Radius must not be negative");
     this->radius = radius;
 
     this->r = r;
@@ -25,15 +31,23 @@ Sphere::Sphere(float x, float y, float z, float radius,
     this->b = b;
 
     this->neighbors = std::vector<int>();
+
+    // Sets initial position of the frame linked to the sphere
+    setZoomSensitivity(0.0);
+    setPosition(x, y, z);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 void Sphere::draw() {
     glPushMatrix();
-    glTranslatef(this->x, this->y, this->z);
+
+    // Updates sphere position, according to frame position
+    setCenter(position());
+    glTranslatef(x, y, z);
     glColor3f(this->r, this->g, this->b);
     glutSolidSphere(this->radius, 20, 20);
+
     glPopMatrix();
 }
 
@@ -96,6 +110,13 @@ void Sphere::setZ(float z) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+void Sphere::setCenter(const Vec &pos) {
+    this->x = pos[0];
+    this->y = pos[1];
+    this->z = pos[2];
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Sphere::setSweeped(bool b) {
     this->sweeped = b;
 }
@@ -120,10 +141,25 @@ void Sphere::operator=(const Sphere& s) {
     this->radius = s.radius;
 }
 
+///////////////////////////////////////////////////////////////////////////////
 void Sphere::setColor(float r, float g, float b) {
     this->r = r;
     this->g = g;
     this->b = b;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Sphere::wheelEvent(QWheelEvent* const event, Camera* const camera) {
+    Qt::KeyboardModifiers modifiers = event->modifiers();
+
+    if (modifiers == Qt::ShiftModifier) {
+        int step = event->delta();
+        float coef = step / 100.0;
+        if (step < 0)
+            coef = 1.0 / (-coef);
+
+        radius *= coef;
+    }
 }
 
 

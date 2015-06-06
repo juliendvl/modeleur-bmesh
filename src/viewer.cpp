@@ -9,11 +9,13 @@
 #include "viewer.h"
 #include "renderable.h"
 
-Viewer::Viewer() {
-}
 
-Viewer::~Viewer()
-{
+///////////////////////////////////////////////////////////////////////////////
+Viewer::Viewer() {}
+
+
+///////////////////////////////////////////////////////////////////////////////
+Viewer::~Viewer() {
 	list<Renderable *>::iterator it;
 	for (it = renderableList.begin(); it != renderableList.end(); ++it) {
  		delete(*it);
@@ -21,19 +23,29 @@ Viewer::~Viewer()
 	renderableList.clear();
 }
 
-void Viewer::addRenderable(Renderable *r)
-{
+
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::addRenderable(Renderable *r) {
         renderableList.push_back(r);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
 void Viewer::delRendreable(Renderable *r) {
     renderableList.remove(r);
 }
 
-void Viewer::init()
-{
-        // glut initialisation (mandatory) 
-        int dum = 0;
+
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::setSkeleton(Skeleton *s) {
+    this->s = s;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::init() {
+    // glut initialisation (mandatory)
+    int dum = 0;
   	glutInit(&dum, NULL);
 
 	//=== VIEWING PARAMETERS
@@ -49,6 +61,7 @@ void Viewer::init()
 		glDisable(GL_LIGHTING);
 	
     setSceneRadius(10.0f);
+    setMouseTracking(true);
 
 	list<Renderable *>::iterator it;
 	for (it = renderableList.begin(); it != renderableList.end(); ++it) {
@@ -59,8 +72,9 @@ void Viewer::init()
 }
 
 
-void Viewer::draw()
-{  
+
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::draw() {
 	// draw every objects in renderableList
 	list<Renderable *>::iterator it;
 	for(it = renderableList.begin(); it != renderableList.end(); ++it) {
@@ -69,22 +83,21 @@ void Viewer::draw()
 }
 
 
-void Viewer::animate()
-{
-	// animate every objects in renderableList
-	list<Renderable *>::iterator it;
-	for(it = renderableList.begin(); it != renderableList.end(); ++it) {
-		(*it)->animate();
-	}
-	
-	// this code might change if some rendered objets (stored as
-	// attributes) need to be specifically updated with common
-	// attributes, like real CPU time (?)
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::mousePressEvent(QMouseEvent *e) {
+    Qt::KeyboardModifiers modifiers = e->modifiers();
+
+    if (modifiers == Qt::ShiftModifier) {
+        s->addBall(new Sphere(5, 5, 5, 1));
+        s->setNeighbors();
+    }
+
+    QGLViewer::mousePressEvent(e);
 }
 
 
-void Viewer::mouseMoveEvent(QMouseEvent *e)
-{
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::mouseMoveEvent(QMouseEvent *e) {
 	// all renderables may respond to key events
 	list<Renderable *>::iterator it;
 	for(it = renderableList.begin(); it != renderableList.end(); ++it) {
@@ -96,8 +109,9 @@ void Viewer::mouseMoveEvent(QMouseEvent *e)
 	updateGL();
 }
 
-void Viewer::keyPressEvent(QKeyEvent *e)
-{
+
+///////////////////////////////////////////////////////////////////////////////
+void Viewer::keyPressEvent(QKeyEvent *e) {
 	// Get event modifiers key
 	const Qt::KeyboardModifiers modifiers = e->modifiers();
 
@@ -130,8 +144,9 @@ void Viewer::keyPressEvent(QKeyEvent *e)
 }
 
 
-QString Viewer::helpString() const
-{
+
+///////////////////////////////////////////////////////////////////////////////
+QString Viewer::helpString() const {
     QString text("<h1>Modeleur 3d par B-Mesh</h1><br>");
     text += "Julien Daval / Omid Ghorreshi<br/>";
     text += "Projet de spécialité de deuxième année Ensimag<br/>";

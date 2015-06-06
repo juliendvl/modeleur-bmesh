@@ -84,6 +84,8 @@ public:
      */
     void setBetweenBalls(bool draw);
 
+    void setNeighbors();
+
     /**
      * @brief Performs sweeping
      */
@@ -103,7 +105,6 @@ private:
     // PRIVATE METHODS
     void createFaces(Segment* sg);
     void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
-    void setNeighbors();
     void interpolation();
     std::vector<float> splitSpaces(const std::string &s);
     void sweepVoisin(int origin, int neighbor);

@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <limits>
 #include "skeleton.h"
 #include "cylinder.h"
 
@@ -44,7 +45,7 @@ void Skeleton::init(Viewer &) {
 }
 
 void Skeleton::draw() {
-    float r_min = balls[0]->getRadius();
+    float r_min = numeric_limits<float>::max();
     float r;
     for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
         Sphere* s = *it;

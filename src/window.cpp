@@ -10,9 +10,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 Window::Window() : QWidget() {
 
-    this->skel = NULL;
+    this->skel = new Skeleton();
     this->level = 1;
     initGUI();
+
+    viewer->setSkeleton(skel);
+    viewer->addRenderable(skel);
 }
 
 
@@ -120,6 +123,7 @@ void Window::changeText() {
         showBetween->setText("Show inbetween-balls");
         skel->setBetweenBalls(false);
     }
+    cout << skel->getBalls().size() << endl;
     viewer->update();
 }
 
@@ -160,6 +164,8 @@ void Window::load() {
     fair->setEnabled(false);
     nbIter->setEnabled(true);
     goSub->setEnabled(true);
+
+    viewer->setSkeleton(skel);
 }
 
 
@@ -172,6 +178,9 @@ void Window::doSweep() {
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
     stitch->setEnabled(true);
+
+    // We stop mouse tracking
+    viewer->setMouseTracking(false);
 }
 
 

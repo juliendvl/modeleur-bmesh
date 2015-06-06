@@ -1,13 +1,14 @@
 #ifndef DEF_SPHERE
 #define DEF_SPHERE
 
+#include <QGLViewer/manipulatedFrame.h>
 #include <vector>
 
 
 /**
  * @brief Ball used for the skeleton
  */
-class Sphere
+class Sphere : public qglviewer::ManipulatedFrame
 {
 
 public:
@@ -90,6 +91,12 @@ public:
     void setZ(float z);
 
     /**
+     * @brief Sets the center of the sphere
+     * @param pos new position
+     */
+    void setCenter(const qglviewer::Vec &pos);
+
+    /**
      * @brief Sets the color of the ball
      * @param r new red component
      * @param g new green component
@@ -120,6 +127,16 @@ public:
      * @param s Ball to copy
      */
     void operator=(const Sphere& s);
+
+
+protected:
+    /**
+     * @brief Wheel event override
+     * @param event  wheel event
+     * @param camera camera
+     */
+    virtual void wheelEvent(QWheelEvent* const event,
+                            qglviewer::Camera* const camera);
 
 
 private:
