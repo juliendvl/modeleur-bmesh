@@ -12,6 +12,7 @@ Window::Window() : QWidget() {
 
     this->skel = new Skeleton();
     this->level = 1;
+    this->generateBetweenBalls = true;
     initGUI();
 
     viewer->setSkeleton(skel);
@@ -32,8 +33,9 @@ void Window::initGUI() {
     // Create buttons
 
     this->loadSkeleton = new QPushButton("Load skeleton");
-    this->saveMesh     = new QPushButton("Save mesh");
-    saveMesh->setEnabled(false);
+    this->saveSkel     = new QPushButton("Save skeleton");
+    this->saveMeshB    = new QPushButton("Save mesh");
+    saveMeshB->setEnabled(false);
 
     this->showBetween  = new QPushButton("Show inbetween-balls");
     this->sweep        = new QPushButton("Sweeping");
@@ -64,7 +66,8 @@ void Window::initGUI() {
     this->loadSave   = new QGroupBox("Load/Save");
     QVBoxLayout *vl1 = new QVBoxLayout;
     vl1->addWidget(loadSkeleton);
-    vl1->addWidget(saveMesh);
+    vl1->addWidget(saveSkel);
+    vl1->addWidget(saveMeshB);
     loadSave->setLayout(vl1);
 
     this->stepByStep = new QGroupBox("Step by Step");
@@ -100,7 +103,8 @@ void Window::initGUI() {
     // Creation on event connections
     QObject::connect(showBetween, SIGNAL(clicked()), this, SLOT(changeText()));
     QObject::connect(loadSkeleton, SIGNAL(clicked()), this, SLOT(load()));
-    QObject::connect(saveMesh, SIGNAL(clicked()), this, SLOT(save()));
+    QObject::connect(saveSkel, SIGNAL(clicked()), this, SLOT(saveSkeleton()));
+    QObject::connect(saveMeshB, SIGNAL(clicked()), this, SLOT(saveMesh()));
     QObject::connect(catmullClark, SIGNAL(clicked()), this, SLOT(subdivide()));
     QObject::connect(sweep, SIGNAL(clicked()), this, SLOT(doSweep()));
     QObject::connect(stitch, SIGNAL(clicked()), this, SLOT(doStitch()));
@@ -116,6 +120,8 @@ void Window::changeText() {
         return;
 
     if (!skel->betweenBalls()) {
+        if (generateBetweenBalls)
+            skel->interpolation();
         showBetween->setText("Hide inbetween-balls");
         skel->setBetweenBalls(true);
     }
@@ -123,7 +129,7 @@ void Window::changeText() {
         showBetween->setText("Show inbetween-balls");
         skel->setBetweenBalls(false);
     }
-    cout << skel->getBalls().size() << endl;
+
     viewer->update();
 }
 
@@ -141,22 +147,26 @@ void Window::load() {
         viewer->delRendreable(skel);
         delete skel;
     }
-
     this->skel = new Skeleton();
 
+    // We load the skeleton
     bool ok = this->skel->loadFromFile(fileName.toStdString());
     if (!ok) {
         QMessageBox::critical(this, "Error", "Unable to open file");
         return;
     }
 
-    this->skel->init(*viewer);
+    // We add the new skeleton in the renderable list
     viewer->addRenderable(this->skel);
-    showBetween->setText("Show inbetween-balls");
+    viewer->setSkeleton(skel);
+    viewer->setMouseTracking(true);
     viewer->update();
 
+    // We change button text
+    showBetween->setText("Show inbetween-balls");
+
     // We can allow the user to click other buttons
-    saveMesh->setEnabled(false);
+    saveMeshB->setEnabled(false);
     sweep->setEnabled(true);
     stitch->setEnabled(false);
     catmullClark->setEnabled(false);
@@ -165,7 +175,7 @@ void Window::load() {
     nbIter->setEnabled(true);
     goSub->setEnabled(true);
 
-    viewer->setSkeleton(skel);
+    this->generateBetweenBalls = true;
 }
 
 
@@ -173,7 +183,7 @@ void Window::load() {
 void Window::doSweep() {
     skel->sweeping();
 
-    saveMesh->setEnabled(true);
+    saveMeshB->setEnabled(true);
     sweep->setEnabled(false);
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
@@ -181,6 +191,9 @@ void Window::doSweep() {
 
     // We stop mouse tracking
     viewer->setMouseTracking(false);
+
+    // We do not need to generate again inbetween-balls
+    this->generateBetweenBalls = false;
 }
 
 
@@ -192,8 +205,25 @@ void Window::doStitch() {
     catmullClark->setEnabled(true);
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-void Window::save() {
+void Window::saveSkeleton() {
+    QString fileName = QFileDialog::getSaveFileName(this, "Same skeleton",
+                                       QString(), "Text file (*.txt)");
+
+    if (fileName.isEmpty())
+        return;
+
+    if (!skel->save(fileName.toStdString())) {
+        QMessageBox::critical(this, "Error", "Unable to save mesh !");
+        return;
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Window::saveMesh() {
     QString fileName = QFileDialog::getSaveFileName(this, "Same mesh",
                                        QString(), "Object file (*.obj)");
 

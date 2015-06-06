@@ -35,9 +35,14 @@ public slots:
     void load();
 
     /**
+     * @brief Saves a skeleton
+     */
+    void saveSkeleton();
+
+    /**
      * @brief Save the mesh generated (.obj format)
      */
-    void save();
+    void saveMesh();
 
     /**
      * @brief Changes the button text when the user clicks the Show/Hide inbetween
@@ -83,7 +88,8 @@ private:
     QGroupBox *allInOne;
 
     QPushButton *loadSkeleton;
-    QPushButton *saveMesh;
+    QPushButton *saveSkel;
+    QPushButton *saveMeshB;
 
     QPushButton *showBetween;
     QPushButton *sweep;
@@ -101,8 +107,9 @@ private:
 
     int level;
 
-    bool saveMeshOK;
+    bool generateBetweenBalls;
 
+    // Creates buttons, group boxes, layouts...
     void initGUI();
 
 };
