@@ -3,6 +3,7 @@
 #include "skeleton.h"
 #include "cylinder.h"
 
+// SqueletteS
 using namespace std;
 using OpenMesh::Vec3f;
 
