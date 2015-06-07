@@ -198,6 +198,16 @@ QString Viewer::helpString() const {
     text += "Les différents raccourcis disponibles sont fournis dans les ";
     text += "<b>Keyboard</b> et <b>Mouse</b> de cette aide.";
 
+    text += "<h2>Comment créer un squelette ?</h2>";
+    text += "<ul>";
+    text += "<li><b>Ajouter une sphère: </b>Shift + clic</li>";
+    text += "<li><b>Déplacer une sphère: </b>placer le curseur près du centre \
+             de la sphère et clic droit</li>";
+    text += "<li><b>Augmenter/Diminuer le rayon: </b>Shift + molette près du \
+             centre de la sphère</b></li>";
+    text += "<li><b>Ajouter une arete: </b>Utiliser le menu <b>Add edge</b></li>";
+    text += "</ul>";
+
     return text;
 }
 
