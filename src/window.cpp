@@ -37,9 +37,14 @@ void Window::initGUI() {
     this->saveMeshB    = new QPushButton("Save mesh");
     saveMeshB->setEnabled(false);
 
+    this->sphere1    = new QSpinBox();
+    sphere1->setMinimum(0);
+    this->sphere2    = new QSpinBox();
+    sphere2->setMinimum(0);
+    this->submitEdge = new QPushButton("Add edge");
+
     this->showBetween  = new QPushButton("Show inbetween-balls");
     this->sweep        = new QPushButton("Sweeping");
-    sweep->setEnabled(false);
     this->stitch       = new QPushButton("Stitching");
     stitch->setEnabled(false);
     this->catmullClark = new QPushButton("Subdivide Mesh");
@@ -70,6 +75,13 @@ void Window::initGUI() {
     vl1->addWidget(saveMeshB);
     loadSave->setLayout(vl1);
 
+    this->addEdge    = new QGroupBox("Add edge");
+    QVBoxLayout *vl4 = new QVBoxLayout;
+    vl4->addWidget(sphere1);
+    vl4->addWidget(sphere2);
+    vl4->addWidget(submitEdge);
+    addEdge->setLayout(vl4);
+
     this->stepByStep = new QGroupBox("Step by Step");
     QVBoxLayout *vl2 = new QVBoxLayout;
     vl2->addWidget(showBetween);
@@ -90,6 +102,7 @@ void Window::initGUI() {
     // Create main layout
     QVBoxLayout *vl = new QVBoxLayout();
     vl->addWidget(loadSave);
+    vl->addWidget(addEdge);
     vl->addWidget(stepByStep);
     vl->addWidget(allInOne);
 
@@ -104,6 +117,7 @@ void Window::initGUI() {
     QObject::connect(showBetween, SIGNAL(clicked()), this, SLOT(changeText()));
     QObject::connect(loadSkeleton, SIGNAL(clicked()), this, SLOT(load()));
     QObject::connect(saveSkel, SIGNAL(clicked()), this, SLOT(saveSkeleton()));
+    QObject::connect(submitEdge, SIGNAL(clicked()), this, SLOT(addSkeletonEdge()));
     QObject::connect(saveMeshB, SIGNAL(clicked()), this, SLOT(saveMesh()));
     QObject::connect(catmullClark, SIGNAL(clicked()), this, SLOT(subdivide()));
     QObject::connect(sweep, SIGNAL(clicked()), this, SLOT(doSweep()));
@@ -112,6 +126,51 @@ void Window::initGUI() {
     QObject::connect(fair, SIGNAL(clicked()), this, SLOT(fairing()));
     QObject::connect(goSub, SIGNAL(clicked()), this, SLOT(doAll()));
 
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+void Window::addSkeletonEdge() {
+    int id1    = sphere1->value();
+    int id2    = sphere2->value();
+    int nBalls = skel->getBalls().size();
+
+    if (nBalls == 0)
+        return;
+
+    // One ball does not exist
+    QString errMess;
+    if (id1 >= nBalls) {
+        errMess = "Ball " + QString::number(id1) + " does not exist !";
+        QMessageBox::critical(this, "Error", errMess);
+        return;
+    }
+    if (id2 >= nBalls) {
+        errMess = "Ball " + QString::number(id2) + " does not exist !";
+        QMessageBox::critical(this, "Error", errMess);
+        return;
+    }
+
+    // Ball ids are the same
+    if (id1 == id2) {
+        errMess = "Ball ids are the same !";
+        QMessageBox::critical(this, "Error", errMess);
+        return;
+    }
+
+    vector< vector<Segment*> > edges = skel->getEdges();
+
+    // Edge exist yet
+    if (edges[id1][id2] != NULL || edges[id2][id1] != NULL) {
+        errMess = "This edge exists !";
+        QMessageBox::critical(this, "Error", errMess);
+        return;
+    }
+
+    // We can add the edge
+    skel->addEdge(new Segment(min(id1, id2), max(id1, id2)));
+    viewer->update();
+    skel->setNeighbors();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,7 +226,6 @@ void Window::load() {
 
     // We can allow the user to click other buttons
     saveMeshB->setEnabled(false);
-    sweep->setEnabled(true);
     stitch->setEnabled(false);
     catmullClark->setEnabled(false);
     evol->setEnabled(false);

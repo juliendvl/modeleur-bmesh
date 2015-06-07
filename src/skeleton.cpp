@@ -574,6 +574,11 @@ Mesh& Skeleton::getMesh() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Skeleton::setNeighbors() {
+    for (unsigned int i = 0; i < balls.size(); i++) {
+        vector<int>& tmp = balls[i]->getNeighbors();
+        tmp.clear();
+    }
+
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {
             if (edges[i][j] != NULL) {

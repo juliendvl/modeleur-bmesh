@@ -64,7 +64,8 @@ public:
      * @brief Returns the neighbors of the ball (in the skeleton)
      * @return Ball neighbors
      */
-    std::vector<int> getNeighbors() const;
+    std::vector<int>  getNeighbors() const;
+    std::vector<int>& getNeighbors();
 
     /**
      * @brief Sets the radius of the ball

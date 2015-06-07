@@ -85,6 +85,11 @@ std::vector<int> Sphere::getNeighbors() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+std::vector<int>& Sphere::getNeighbors() {
+    return this->neighbors;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Sphere::setRadius(float radius) {
     if (radius < 0)
         std::invalid_argument("Radius must not be negative");

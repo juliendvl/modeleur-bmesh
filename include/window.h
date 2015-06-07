@@ -30,19 +30,9 @@ public:
 
 public slots:
     /**
-     * @brief Loads a skeleton (.txt format)
+     * @brief Adds an edge in the skeleton
      */
-    void load();
-
-    /**
-     * @brief Saves a skeleton
-     */
-    void saveSkeleton();
-
-    /**
-     * @brief Save the mesh generated (.obj format)
-     */
-    void saveMesh();
+    void addSkeletonEdge();
 
     /**
      * @brief Changes the button text when the user clicks the Show/Hide inbetween
@@ -51,9 +41,11 @@ public slots:
     void changeText();
 
     /**
-     * @brief Process sweeping
+     * @brief Process the mesh generation.
+     *        This method processes all steps which are necessary (sweeping,
+     *        stitching, subdivision, evolution and fairing)
      */
-    void doSweep();
+    void doAll();
 
     /**
      * @brief Process stitching
@@ -61,9 +53,9 @@ public slots:
     void doStitch();
 
     /**
-     * @brief Process Catmull-Clark subdivision
+     * @brief Process sweeping
      */
-    void subdivide();
+    void doSweep();
 
     /**
      * @brief Process the mesh evolution
@@ -76,20 +68,39 @@ public slots:
     void fairing();
 
     /**
-     * @brief Process the mesh generation.
-     *        This method processes all steps which are necessary (sweeping,
-     *        stitching, subdivision, evolution and fairing)
+     * @brief Loads a skeleton (.txt format)
      */
-    void doAll();
+    void load();
+
+    /**
+     * @brief Save the mesh generated (.obj format)
+     */
+    void saveMesh();
+
+    /**
+     * @brief Saves a skeleton
+     */
+    void saveSkeleton();
+
+    /**
+     * @brief Process Catmull-Clark subdivision
+     */
+    void subdivide();
+
 
 private:
     QGroupBox *loadSave;
+    QGroupBox *addEdge;
     QGroupBox *stepByStep;
     QGroupBox *allInOne;
 
     QPushButton *loadSkeleton;
     QPushButton *saveSkel;
     QPushButton *saveMeshB;
+
+    QSpinBox *sphere1;
+    QSpinBox *sphere2;
+    QPushButton *submitEdge;
 
     QPushButton *showBetween;
     QPushButton *sweep;

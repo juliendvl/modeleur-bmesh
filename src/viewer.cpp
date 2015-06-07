@@ -9,6 +9,8 @@
 #include "viewer.h"
 #include "renderable.h"
 
+using namespace qglviewer;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 Viewer::Viewer() {}
@@ -80,6 +82,25 @@ void Viewer::draw() {
 	for(it = renderableList.begin(); it != renderableList.end(); ++it) {
 		(*it)->draw();
 	}
+
+    if (s->getMesh().getMesh().n_vertices() != 0)
+        return;
+
+    startScreenCoordinatesSystem();
+    glDisable(GL_LIGHTING);
+    glColor3f(0.0, 0.0, 0.0);
+
+    vector<Sphere*> balls = s->getBalls();
+    for (unsigned int i = 0; i < balls.size(); ++i) {
+        Sphere *s = balls[i];
+        Vec spos = camera()->projectedCoordinatesOf(s->position());
+        float r = s->getRadius();
+        drawText(spos[0] + r + 2, spos[1] + r + 2, QString::number(i),
+                 QFont("Liberation Sans", 14));
+    }
+
+    glEnable(GL_LIGHTING);
+    stopScreenCoordinatesSystem();
 }
 
 
@@ -88,8 +109,13 @@ void Viewer::mousePressEvent(QMouseEvent *e) {
     Qt::KeyboardModifiers modifiers = e->modifiers();
 
     if (modifiers == Qt::ShiftModifier) {
-        s->addBall(new Sphere(5, 5, 5, 1));
-        s->setNeighbors();
+        s->addBall(new Sphere(5.0, 5.0, 5.0, 1));
+
+        // We update edge matrix
+        vector< vector<Segment*> > &edges = s->getEdges();
+        edges.push_back(vector<Segment*>(s->getBalls().size()));
+        for (unsigned int i = 0; i < edges.size() - 1; ++i)
+            edges[i].push_back(NULL);
     }
 
     QGLViewer::mousePressEvent(e);
