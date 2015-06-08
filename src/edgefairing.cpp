@@ -72,7 +72,7 @@ bool EdgeFairing::fairing() {
         }
 
         // We get curvature tensor
-        CurvatureTensor ct(*m);
+        CurvatureTensor ct(m);
         ct.compute(*vit, neighbors);
         vector<float> curv = ct.getCurvatures();
 

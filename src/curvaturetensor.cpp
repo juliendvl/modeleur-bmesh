@@ -9,7 +9,7 @@ using OpenMesh::Vec2f;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-CurvatureTensor::CurvatureTensor(const BMesh &m) : m(m) {}
+CurvatureTensor::CurvatureTensor(BMesh *m) : m(m) {}
 
 
 
@@ -22,17 +22,17 @@ bool CurvatureTensor::compute(const BMesh::VertexHandle &p,
     curvatures.clear();
     directions.clear();
 
-    Vector3f px = OMEigen::toEigen(m.point(p));
-    Vector3f nx = OMEigen::toEigen(m.normal(p));
+    Vector3f px = OMEigen::toEigen(m->point(p));
+    Vector3f nx = OMEigen::toEigen(m->normal(p));
 
     // We construct the tangent plane
     tp = getTangentPlane(px, nx);
 
     // We only need 2 neighbors to compute Weingarten matrix
-    Vector3f n0 = OMEigen::toEigen(m.normal(neighbors[1]));
-    Vector3f n1 = OMEigen::toEigen(m.normal(neighbors[2]));
-    Vector3f p0 = OMEigen::toEigen(m.point(neighbors[1]));
-    Vector3f p1 = OMEigen::toEigen(m.point(neighbors[2]));
+    Vector3f n0 = OMEigen::toEigen(m->normal(neighbors[1]));
+    Vector3f n1 = OMEigen::toEigen(m->normal(neighbors[2]));
+    Vector3f p0 = OMEigen::toEigen(m->point(neighbors[1]));
+    Vector3f p1 = OMEigen::toEigen(m->point(neighbors[2]));
 
 
     float n0u = (n0 - nx).dot(tp[0]);
@@ -103,7 +103,7 @@ vector<Vector3f> CurvatureTensor::getTangentPlane(const Vector3f &px,
     vector<Vector3f> res;
 
     // First, we must project ont neighbor in the tangent plane
-    Vector3f pnbor = OMEigen::toEigen(m.point(neighbors[0]));
+    Vector3f pnbor = OMEigen::toEigen(m->point(neighbors[0]));
     pnbor = MathUtils::projectPoint(px, pnbor, nx);
 
     // "X" axis

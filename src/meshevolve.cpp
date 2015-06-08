@@ -62,7 +62,7 @@ bool MeshEvolve::evolve() {
             vector<BMesh::VertexHandle> neighbors;
             for (vv = m->vv_iter(*lit); vv.is_valid(); ++vv)
                 neighbors.push_back(*vv);
-            CurvatureTensor ct(*m);
+            CurvatureTensor ct(m);
             ct.compute(*lit, neighbors);
             vector<float> curvatures = ct.getCurvatures();
 
@@ -77,9 +77,6 @@ bool MeshEvolve::evolve() {
             if (mit.value() > Fmax)
                 Fmax = mit.value();
         dt = 0.75 * (step / Fmax);
-        //dt = 1.0;
-
-
 
         // We update positions and check if some points do not need to
         // evolve anymore
@@ -104,7 +101,7 @@ bool MeshEvolve::evolve() {
 
 ///////////////////////////////////////////////////////////////////////////////
 Vec3f MeshEvolve::scalarNormal(const Vec3f &p) {
-    const float eps = 1e-2;
+    const float eps = 1e-4;
 
     Vec3f dx(eps, 0.0, 0.0);
     Vec3f dy(0.0, eps, 0.0);
@@ -147,8 +144,9 @@ float MeshEvolve::scalarField(const Vec3f &p) {
     float res = 0.0;
     const float T = 0.1;
 
-    for (unsigned int i = 0; i < balls.size(); ++i)
+    for (unsigned int i = 0; i < 62; ++i) {
         res += fi(balls[i], p);
+    }
     return (res - T);
 }
 
