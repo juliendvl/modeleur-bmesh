@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include <list>
 #include <QMap>
 #include "meshevolve.h"
@@ -9,32 +10,49 @@ using OpenMesh::Vec3f;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s) {
+MeshEvolve::MeshEvolve(Mesh &mesh, Skeleton *s, int level) {
     this->m = mesh.getPMesh();
     this->s = s;
+    this->level = level;
+
+    // We get all balls (key and in-between balls) to save time
+    // calculation
+    balls = s->getBalls();
+    vector< vector<Segment*> >e = s->getEdges();
+    for (unsigned int i = 0; i < e.size(); ++i) {
+        for (unsigned int j = 0; j < e.size(); ++j) {
+            if (e[i][j] != NULL) {
+                vector<Sphere*> ibb = e[i][j]->getInBetweenBalls();
+                balls.insert(balls.end(), ibb.begin(), ibb.end());
+            }
+        }
+    }
+
+    computeStep();
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 bool MeshEvolve::evolve() {
-    const float eps = 0.31;     // Threshold parameter
-    const float dt  = 1.0;      // Fixed at first
+    const float eps = 0.11;     // Threshold parameter
+    float dt  = 1.0;            // Fixed at first
     BMesh::VertexIter vit;
     BMesh::VertexVertexIter vv;
     list<BMesh::VertexHandle> points;
 
-    // We only add points which need to evolve
     for (vit = m->vertices_begin(); vit != m->vertices_end(); ++vit) {
         int k = 0;
         for (vv = m->vv_iter(*vit); vv.is_valid(); ++vv)
             k++;
-        if (k >= 3)
+        if (k >= 3 && (scalarField(m->point(*vit)) >= eps))
             points.push_back(*vit);
+
     }
 
     // While there are points which need to evolve
     while (points.size() != 0) {
-        QMap<BMesh::VertexHandle, Vec3f> ptsMap;
+        QMap<BMesh::VertexHandle, float> F;
+        QMap<BMesh::VertexHandle, float>::iterator mit;
         list<BMesh::VertexHandle>::iterator lit;
 
         for (lit = points.begin(); lit != points.end(); ++lit) {
@@ -50,21 +68,28 @@ bool MeshEvolve::evolve() {
 
             // We compute the motion speed function
             float f = 1.0 / (1.0 + fabs(curvatures[0]) + fabs(curvatures[1]));
-            float F = scalarField(p) * f;
-
-            // We compute the new point
-            Vec3f n = scalarNormal(p);
-            Vec3f newPt = p + n * F * dt;
-            ptsMap.insert(*lit, newPt);
+            F.insert(*lit, scalarField(p) * f);
         }
+
+        // We compute dt
+        float Fmax = numeric_limits<float>::min();
+        for (mit = F.begin(); mit != F.end(); ++mit)
+            if (mit.value() > Fmax)
+                Fmax = mit.value();
+        dt = 0.75 * (step / Fmax);
+        //dt = 1.0;
+
+
 
         // We update positions and check if some points do not need to
         // evolve anymore
-        QMap<BMesh::VertexHandle, Vec3f>::iterator mit;
-        for (mit = ptsMap.begin(); mit != ptsMap.end(); ++mit) {
-            m->set_point(mit.key(), mit.value());
+        for (mit = F.begin(); mit != F.end(); ++mit) {
+            Vec3f p = m->point(mit.key());
+            Vec3f n = scalarNormal(p);
+            Vec3f newPt = p + n * mit.value() * dt;
+            m->set_point(mit.key(), newPt);
 
-            if ( scalarField(mit.value()) < eps )
+            if ( scalarField(newPt) < eps )
                 points.remove(mit.key());
         }
     }
@@ -79,15 +104,15 @@ bool MeshEvolve::evolve() {
 
 ///////////////////////////////////////////////////////////////////////////////
 Vec3f MeshEvolve::scalarNormal(const Vec3f &p) {
-    const float DP = 1e-2;
+    const float eps = 1e-2;
 
-    Vec3f dx(DP, 0.0, 0.0);
-    Vec3f dy(0.0, DP, 0.0);
-    Vec3f dz(0.0, 0.0, DP);
+    Vec3f dx(eps, 0.0, 0.0);
+    Vec3f dy(0.0, eps, 0.0);
+    Vec3f dz(0.0, 0.0, eps);
 
-    float nx = (scalarField(p + dx) - scalarField(p - dx)) / (2*DP);
-    float ny = (scalarField(p + dy) - scalarField(p - dy)) / (2*DP);
-    float nz = (scalarField(p + dz) - scalarField(p - dz)) / (2*DP);
+    float nx = (scalarField(p + dx) - scalarField(p - dx)) / (2*eps);
+    float ny = (scalarField(p + dy) - scalarField(p - dy)) / (2*eps);
+    float nz = (scalarField(p + dz) - scalarField(p - dz)) / (2*eps);
 
     Vec3f n(-nx, -ny, -nz);
 
@@ -119,22 +144,24 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
 
 ///////////////////////////////////////////////////////////////////////////////
 float MeshEvolve::scalarField(const Vec3f &p) {
-    vector<Sphere*> balls = s->getBalls();
     float res = 0.0;
-    const float T = 0.2;
-
-    // We first get all balls (key and in-between balls)
-    vector< vector<Segment*> >e = s->getEdges();
-    for (unsigned int i = 0; i < e.size(); ++i) {
-        for (unsigned int j = 0; j < e.size(); ++j) {
-            if (e[i][j] != NULL) {
-                vector<Sphere*> ibb = e[i][j]->getInBetweenBalls();
-                balls.insert(balls.end(), ibb.begin(), ibb.end());
-            }
-        }
-    }
+    const float T = 0.1;
 
     for (unsigned int i = 0; i < balls.size(); ++i)
         res += fi(balls[i], p);
     return (res - T);
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+void MeshEvolve::computeStep() {
+    float min = numeric_limits<float>::max();
+
+    // step = min{ri} / 2^k, where k is the subdivision level
+    for (unsigned int i = 0; i < balls.size(); ++i)
+        if (balls[i]->getRadius() < min)
+            min = balls[i]->getRadius();
+
+    this->step = min / (1 << level);
 }

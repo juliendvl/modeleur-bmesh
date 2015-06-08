@@ -1,14 +1,14 @@
 #ifndef DEF_SPHERE
 #define DEF_SPHERE
 
+#include <QGLViewer/manipulatedFrame.h>
 #include <vector>
-#include "renderable.h"
 
 
 /**
  * @brief Ball used for the skeleton
  */
-class Sphere : public Renderable
+class Sphere : public qglviewer::ManipulatedFrame
 {
 
 public:
@@ -64,7 +64,8 @@ public:
      * @brief Returns the neighbors of the ball (in the skeleton)
      * @return Ball neighbors
      */
-    std::vector<int> getNeighbors() const;
+    std::vector<int>  getNeighbors() const;
+    std::vector<int>& getNeighbors();
 
     /**
      * @brief Sets the radius of the ball
@@ -89,6 +90,12 @@ public:
      * @param z new z position
      */
     void setZ(float z);
+
+    /**
+     * @brief Sets the center of the sphere
+     * @param pos new position
+     */
+    void setCenter(const qglviewer::Vec &pos);
 
     /**
      * @brief Sets the color of the ball
@@ -121,6 +128,16 @@ public:
      * @param s Ball to copy
      */
     void operator=(const Sphere& s);
+
+
+protected:
+    /**
+     * @brief Wheel event override
+     * @param event  wheel event
+     * @param camera camera
+     */
+    virtual void wheelEvent(QWheelEvent* const event,
+                            qglviewer::Camera* const camera);
 
 
 private:

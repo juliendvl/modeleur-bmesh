@@ -11,17 +11,14 @@
 typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
 /**
- * @brief This class is used to store an OpenMesh mesh.
- *        We also provide functions which allow to subdivide a mesh (with the
- *        Catmull-Clark algorithm), to draw a mesh and to save a mesh in a
- *        .obj file.
+ * @brief Mesh methods
  */
-class Mesh : public Renderable
+class Mesh
 {
 
 public:
     /**
-     * @brief Constructor
+     * @brief Default constructor
      */
     Mesh();
 
@@ -38,9 +35,11 @@ public:
      * @return OpenMesh mesh
      */
     BMesh& getMesh();
-
     BMesh* getPMesh();
 
+    /**
+     * @brief Draws the mesh
+     */
     void draw();
 
     /**
@@ -59,6 +58,7 @@ public:
 private:
     BMesh *mesh;
 
+    // Gets the normal handle
     int getNormalIndex(const std::vector<OpenMesh::Vec3f> &v,
                        const OpenMesh::Vec3f &n);
 

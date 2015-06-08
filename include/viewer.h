@@ -1,17 +1,10 @@
-/*
- * Main GL viewer class, based on the QGLViewer library.
- * 
- * QGLViewer is a Qt-based viewer, which provides an OpenGL rendering
- * context and GUI event management.
- * The documentation of the QGLViewer library can be found at the following 
- * url: http://www.libqglviewer.com
- */
-
-#ifndef _VIEWER_
-#define _VIEWER_
+#ifndef DEF_VIEWER
+#define DEF_VIEWER
 
 #include <QGLViewer/qglviewer.h>
 #include <list>
+#include "skeleton.h"
+
 using namespace std;
 
 class Renderable;
@@ -19,13 +12,15 @@ class Renderable;
 
 class Viewer : public QGLViewer
 {
-public :
-	        
+
+public :        
 	Viewer();
 	virtual ~Viewer();
 
 	void addRenderable(Renderable *r);
     void delRendreable(Renderable *r);
+
+    void setSkeleton(Skeleton *s);
 
 /* Scene methods */
 protected :
@@ -37,13 +32,9 @@ protected :
 		
 	/// Draw every objects of the scene
 	virtual void draw();
-		
-	/// Animate every objects of the scene
-	virtual void animate();
 
 
-/* Viewing parameters */
-protected :
+    /* Viewing parameters */
 	bool toogleWireframe;
 	bool toogleLight;
 
@@ -53,8 +44,15 @@ protected :
 	/// Handle keyboard events specifically
 	virtual void mouseMoveEvent(QMouseEvent *e);
 
+    virtual void mousePressEvent(QMouseEvent *e);
+
     /// Draw every objects of the scene
     virtual QString helpString() const;
+
+
+private:
+    Skeleton *s;
+
 };
 
 #endif
