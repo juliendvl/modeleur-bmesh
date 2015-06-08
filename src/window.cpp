@@ -178,6 +178,7 @@ void Window::doSweep() {
 ///////////////////////////////////////////////////////////////////////////////
 void Window::doStitch() {
     // TODO: process stitching
+    skel->stitching();
 
     stitch->setEnabled(false);
     catmullClark->setEnabled(true);

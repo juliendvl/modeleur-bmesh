@@ -96,6 +96,10 @@ public:
      */
     void sweeping();
 
+    /**
+     * @brief Performs stitching
+     */
+    void stitching();
 
 private:
     std::vector<Sphere*> balls;                 // Balls

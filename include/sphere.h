@@ -3,7 +3,8 @@
 
 #include <vector>
 #include "renderable.h"
-
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
 
 /**
  * @brief Ball used for the skeleton
@@ -65,6 +66,8 @@ public:
      * @return Ball neighbors
      */
     std::vector<int> getNeighbors() const;
+
+    std::vector<BMesh::Point>& getPoints();
 
     /**
      * @brief Sets the radius of the ball
@@ -136,6 +139,7 @@ private:
     bool sweeped;
 
     std::vector<int> neighbors;
+    std::vector<BMesh::Point> points;
 };
 
 /**

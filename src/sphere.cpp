@@ -70,6 +70,11 @@ std::vector<int> Sphere::getNeighbors() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+std::vector<BMesh::Point>& Sphere::getPoints() {
+    return this->points;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 void Sphere::setRadius(float radius) {
     if (radius < 0)
         std::invalid_argument("Radius must not be negative");
