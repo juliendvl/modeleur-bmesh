@@ -33,7 +33,7 @@ Sphere::Sphere(float x, float y, float z, float radius,
     this->neighbors = std::vector<int>();
 
     // Sets initial position of the frame linked to the sphere
-    setZoomSensitivity(0.0);
+    //setZoomSensitivity(0.0);
     setPosition(x, y, z);
 }
 
