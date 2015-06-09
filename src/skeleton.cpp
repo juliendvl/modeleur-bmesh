@@ -2,19 +2,10 @@
 #include <sstream>
 #include "skeleton.h"
 #include "cylinder.h"
-
-# include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-# include <CGAL/Delaunay_triangulation_3.h>
-# include <CGAL/Triangulation_vertex_base_with_info_3.h>
+#include <cassert>
 
 using namespace std;
 using OpenMesh::Vec3f;
-typedef CGAL::Epick kernel;
-typedef CGAL::Triangulation_vertex_base_with_info_3<BMesh::Point,kernel > vertex_base;
-typedef CGAL::Triangulation_data_structure_3< vertex_base > triangulation_data_structure;
-typedef CGAL::Delaunay_triangulation_3< kernel, triangulation_data_structure > triangulation;
-typedef triangulation::Point point;
-typedef triangulation::Vertex_handle vhandle;
 typedef triangulation::Cell_handle cell_handle;
 
 Skeleton::Skeleton() : drawBetween(false)
@@ -83,14 +74,14 @@ void Skeleton::draw() {
             r_min = r;
         }
 
-        if (s->valence() > 2) {
+        /*if (s->valence() > 2) {
             vector<BMesh::Point>& points = s->getPoints();
             for (unsigned int i = 0; i < s->getPoints().size(); i++) {
                 BMesh::Point p = points[i];
                 Sphere* test = new Sphere(p[0],p[1],p[2],0.1);
                 test->draw();
             }
-        }
+        }*/
     }
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {
@@ -215,6 +206,7 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
     Vec3f axe2_x, axe3_x, axe3_y, axe3_z;
     Vec3f axe_Z(0,0,1);
     float coef = 2.0;
+    std::vector<BMesh::Point> group,group2;
     // If it hasn't been sweeped
     if (!n->getSweeped()) {
         //cout << "o = " << origin << " et n = " << neighbor << endl;
@@ -266,7 +258,8 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
                         cz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
                 vhandle.push_back(m.add_vertex(p));
                 if (o->valence() > 2){
-                    o->getPoints().push_back(p);
+                    o->getTriangulation().insert(point(p[0],p[1],p[2]));
+                    group.push_back(p);
                 }
             }
 
@@ -359,7 +352,8 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
                             nz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
                     vhandle.push_back(m.add_vertex(p));
                     if (o->valence() > 2){
-                        o->getPoints().push_back(p);
+                        o->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group.push_back(p);
                     }
                 }
             } else if (n->valence() == 2) {
@@ -400,7 +394,8 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
                             nz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[2] + sin(M_PI/4.0*(2*k+1))*axe3_z[2]));
                     vhandle.push_back(m.add_vertex(p));
                     if (o->valence() > 2){
-                        o->getPoints().push_back(p);
+                        o->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group.push_back(p);
                     }
                 }
             }
@@ -414,6 +409,10 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
                     createFaces(vhandle2, false);
                 }
             }
+        }
+
+        if ((o->valence() > 2) && (group.size() != 0)) {
+            o->getGroupPoints().push_back(group);
         }
 
         // If it is an end node, we close the mesh
@@ -439,13 +438,18 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         } else {
             if (vhandle.size() != 0) {
                 for (int k = 4; k > 0; k--) {
-                    n->getPoints().push_back(m.point(vhandle[vhandle.size()-k]));
+                    BMesh::Point p = m.point(vhandle[vhandle.size()-k]);
+                    n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                    group2.push_back(p);
                 }
             } else {
                 for (int k = 0; k < 4; k++) {
-                    n->getPoints().push_back(m.point(vhandle2[k]));
+                    BMesh::Point p = m.point(vhandle2[k]);
+                    n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                    group2.push_back(p);
                 }
             }
+            n->getGroupPoints().push_back(group2);
         }
 
     }
@@ -501,45 +505,335 @@ void Skeleton::createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNo
 void Skeleton::stitching() {
     BMesh& m = mesh.getMesh();
     std::vector<BMesh::VertexHandle> face_vhandles;
-
+    BMesh::Point p1,p2,p3;
     for (unsigned int i = 0; i < balls.size(); i++) {
         Sphere* s = balls[i];
         if (s->valence() > 2) {
-            vector<BMesh::Point>& points = s->getPoints();
-            triangulation tr;
-            for(unsigned int j = 0; j < points.size(); j++) {
-                BMesh::Point p = points[j];
-                //const auto& position = points.get_position(); //récupérez la position du sommet
-                tr.insert(point(p[0],p[1],p[2])); //->info() = ...
-            }
-            //cout << tr << endl;
+            triangulation& tr = s->getTriangulation();
             list<cell_handle> cells;
             tr.incident_cells(tr.infinite_vertex(),std::back_inserter(cells));
 
-            //vector<vhandle*> vhandles;
+            list<vector<vhandle> > triangles;
             for(list<cell_handle>::iterator it = cells.begin(); it!=cells.end(); ++it) {
+                vector<vhandle> vh0;
                 cell_handle& cell = *it;
-                vhandle vh[3];
-                int j = 0;
                 for(int k = 0; k < 4; ++k) {
                     if(!tr.is_infinite(cell->vertex(k))) {
-                        vh[j] = cell->vertex(k);
-                        ++j;
+                        vh0.push_back(cell->vertex(k));
                     }
                 }
-                //vhandles.push_back(vh);
-                point p1 = tr.point(vh[0]);
-                point p2 = tr.point(vh[1]);
-                point p3 = tr.point(vh[2]);
-                face_vhandles.clear();
-                face_vhandles.push_back(m.add_vertex(BMesh::Point(p1[0],p1[1],p1[2])));
-                face_vhandles.push_back(m.add_vertex(BMesh::Point(p2[0],p2[1],p2[2])));
-                face_vhandles.push_back(m.add_vertex(BMesh::Point(p3[0],p3[1],p3[2])));
-                m.add_face(face_vhandles);
+                triangles.push_back(vh0);
             }
 
+            cout << "les triangles " << endl;
+            for (list<vector<vhandle> >::iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2) {
+                    vector<vhandle>& vhtest = *it2;
+                    cout << "p1 = " << toBMeshPoint(tr.point(vhtest[0])) << endl;
+                    cout << "p2 = " << toBMeshPoint(tr.point(vhtest[1])) << endl;
+                    cout << "p3 = " << toBMeshPoint(tr.point(vhtest[2])) << endl;
+                    cout << endl;
+            }
+            cout << endl;
+
+            // We search a triangle which has two points in the same mesh
+            cout << "size de base = " << triangles.size() << endl;
+            list<vector<vhandle> >::iterator it = triangles.begin();
+            vector<vhandle>& vh = *it;
+            p1 = toBMeshPoint(tr.point(vh[0]));
+            p2 = toBMeshPoint(tr.point(vh[1]));
+            p3 = toBMeshPoint(tr.point(vh[2]));
+            int first1,first2,first3;
+            while (!s->inTheSameGroup(p1,p2,first1) && !s->inTheSameGroup(p3,p1,first3)
+                   && !s->inTheSameGroup(p2,p3,first2) && (it != triangles.end())) {
+                ++it;
+                vh = *it;
+                p1 = toBMeshPoint(tr.point(vh[0]));
+                p2 = toBMeshPoint(tr.point(vh[1]));
+                p3 = toBMeshPoint(tr.point(vh[2]));
+            }
+
+            if (s->inTheSameGroup(p1,p2,first1)) {
+                // If the edge of the triangle is in the same direction
+                // as the mesh's one, we swap the two points
+                if (first1 == 1) {
+                    vhandle tmp = vh[0];
+                    vh[0] = vh[1];
+                    vh[1] = tmp;
+                }
+            } else if (s->inTheSameGroup(p3,p1,first3)) {
+                if (first3 == 1) {
+                    vhandle tmp = vh[0];
+                    vh[0] = vh[2];
+                    vh[2] = tmp;
+                }
+            } else if (s->inTheSameGroup(p2,p3,first2)) {
+                if (first2 == 1) {
+                    vhandle tmp = vh[1];
+                    vh[1] = vh[2];
+                    vh[2] = tmp;
+                }
+            }
+
+            cout << "avant orient" << endl;
+            orientate(s,triangles,vh);
+            cout << "apres orient" << endl;
+
+
+            for (vector<vector<vhandle> >::iterator it = s->getTriangles().begin(); it!=s->getTriangles().end(); ++it) {
+                vector<vhandle> vh = *it;
+                face_vhandles.clear();
+                face_vhandles.push_back(m.add_vertex(toBMeshPoint(tr.point(vh[0]))));
+                face_vhandles.push_back(m.add_vertex(toBMeshPoint(tr.point(vh[1]))));
+                face_vhandles.push_back(m.add_vertex(toBMeshPoint(tr.point(vh[2]))));
+                m.add_face(face_vhandles);
+            }
         }
     }
+}
+
+void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vhandle> &vh) {
+    triangulation& tr = s->getTriangulation();
+    // On prend les points de référence déjà orientés
+    BMesh::Point pRef1 = toBMeshPoint(tr.point(vh[0]));
+    BMesh::Point pRef2 = toBMeshPoint(tr.point(vh[1]));
+    BMesh::Point pRef3 = toBMeshPoint(tr.point(vh[2]));
+    cout << endl;
+    cout << endl;
+    cout << "vh" << endl;
+    cout << "pRef1 = " << pRef1 << endl;
+    cout << "pRef2 = " << pRef2 << endl;
+    cout << "pRef3 = " << pRef3 << endl;
+
+    //cout << s->valence() << endl;
+    cout << triangles.size() << endl;
+
+    // On enlève le triangle déjà orienté de la liste provisoire
+    triangles.remove(vh);
+    cout << "apres remove " << triangles.size() << endl;
+
+    // On ajoute le triangle déjà orienté dans le tableau définitif
+    s->getTriangles().push_back(vh);
+
+    // All the triangles are oriented correctly
+    if (triangles.size() == 0) {
+        return;
+    }
+
+    // On commence au début de la liste
+    list<vector<vhandle> >::iterator it = triangles.begin();
+    vector<vhandle>& vh2 = *it;
+    BMesh::Point p1,p2,p3;
+    bool vh2Empty;
+    int count = 0;
+    // Tant qu'on n'a pas trouvé de triangles adjacents et qu'il y a des candidats
+    while (it != triangles.end()) {
+        count++;
+        // On prend le triangle
+        vh2 = *it;
+        p1 = toBMeshPoint(tr.point(vh2[0]));
+        p2 = toBMeshPoint(tr.point(vh2[1]));
+        p3 = toBMeshPoint(tr.point(vh2[2]));
+        // On teste s'il est adjacent
+        if (p1 == pRef1) {
+            // 1->2 => swap
+            if (p2 == pRef2) {
+                vhandle tmp = vh2[0];
+                vh2[0] = vh2[1];
+                vh2[1] = tmp;
+                break;
+            }
+            // 2->1 => ok
+            if (p2 == pRef3) {
+                break;
+            }
+            // 1->3 => ok
+            if (p3 == pRef2) {
+                break;
+            }
+            // 3->1 => swap
+            if (p3 == pRef3) {
+                vhandle tmp = vh2[0];
+                vh2[0] = vh2[2];
+                vh2[2] = tmp;
+                break;
+            }
+        }
+        if (p2 == pRef1) {
+            // 2->1 => ok
+            if (p1 == pRef2) {
+                break;
+            }
+            // 1->2 => swap
+            if (p1 == pRef3) {
+                vhandle tmp = vh2[0];
+                vh2[0] = vh2[1];
+                vh2[1] = tmp;
+                break;
+            }
+            // 2->3 => swap
+            if (p3 == pRef2) {
+                vhandle tmp = vh2[1];
+                vh2[1] = vh2[2];
+                vh2[2] = tmp;
+                break;
+            }
+            // 3->2 => ok
+            if (p3 == pRef3) {
+                break;
+            }
+        }
+        if (p3 == pRef1) {
+            // 3->1 => swap
+            if (p1 == pRef2) {
+                vhandle tmp = vh2[0];
+                vh2[0] = vh2[2];
+                vh2[2] = tmp;
+                break;
+            }
+            // 1->3 => ok
+            if (p1 == pRef3) {
+                break;
+            }
+            // 3->2 => ok
+            if (p2 == pRef2) {
+                break;
+            }
+            // 2->3 => swap
+            if (p2 == pRef3) {
+                vhandle tmp = vh2[2];
+                vh2[1] = vh2[2];
+                vh2[2] = tmp;
+                break;
+            }
+        }
+        ++it;
+    }
+    cout << "count = " << count << endl;
+
+    if (it == triangles.end()) {
+        vh2Empty = true;
+    }
+    vector<vhandle>& vh3 = *(triangles.begin());
+    int count2 = 0;
+    while (it != triangles.end()) {
+        ++it;
+        count2++;
+        vh3 = *it;
+        p1 = toBMeshPoint(tr.point(vh3[0]));
+        p2 = toBMeshPoint(tr.point(vh3[1]));
+        p3 = toBMeshPoint(tr.point(vh3[2]));
+
+        if (p1 == pRef1) {
+            // 1->2 => swap
+            if (p2 == pRef2) {
+                vhandle tmp = vh3[0];
+                vh3[0] = vh3[1];
+                vh3[1] = tmp;
+                break;
+            }
+            // 2->1 => ok
+            if (p2 == pRef3) {
+                break;
+            }
+            // 1->3 => ok
+            if (p3 == pRef2) {
+                break;
+            }
+            // 3->1 => swap
+            if (p3 == pRef3) {
+                vhandle tmp = vh3[0];
+                vh3[0] = vh3[2];
+                vh3[2] = tmp;
+                break;
+            }
+        }
+        if (p2 == pRef1) {
+            // 2->1 => ok
+            if (p1 == pRef2) {
+                break;
+            }
+            // 1->2 => swap
+            if (p1 == pRef3) {
+                vhandle tmp = vh3[0];
+                vh3[0] = vh3[1];
+                vh3[1] = tmp;
+                break;
+            }
+            // 2->3 => swap
+            if (p3 == pRef2) {
+                vhandle tmp = vh3[1];
+                vh3[1] = vh3[2];
+                vh3[2] = tmp;
+                break;
+            }
+            // 3->2 => ok
+            if (p3 == pRef3) {
+                break;
+            }
+        }
+        if (p3 == pRef1) {
+            // 3->1 => swap
+            if (p1 == pRef2) {
+                vhandle tmp = vh3[0];
+                vh3[0] = vh3[2];
+                vh3[2] = tmp;
+                break;
+            }
+            // 1->3 => ok
+            if (p1 == pRef3) {
+                break;
+            }
+            // 3->2 => ok
+            if (p2 == pRef2) {
+                break;
+            }
+            // 2->3 => swap
+            if (p2 == pRef3) {
+                vhandle tmp = vh3[2];
+                vh3[1] = vh3[2];
+                vh3[2] = tmp;
+                break;
+            }
+        }
+    }
+    cout << "count2 = " << count2 << endl;
+
+    if (!vh2Empty) {
+        BMesh::Point vh2pRef1 = toBMeshPoint(tr.point(vh2[0]));
+        BMesh::Point vh2pRef2 = toBMeshPoint(tr.point(vh2[1]));
+        BMesh::Point vh2pRef3 = toBMeshPoint(tr.point(vh2[2]));
+        cout << endl;
+        cout << endl;
+        cout << "vh2" << endl;
+        cout << "vh2p1 = " << vh2pRef1 << endl;
+        cout << "vh2p2 = " << vh2pRef2 << endl;
+        cout << "vh2p3 = " << vh2pRef3 << endl;
+        if (it != triangles.end()) {
+            cout << "vh3 = " << endl;
+            BMesh::Point vh3pRef1 = toBMeshPoint(tr.point(vh3[0]));
+            BMesh::Point vh3pRef2 = toBMeshPoint(tr.point(vh3[1]));
+            BMesh::Point vh3pRef3 = toBMeshPoint(tr.point(vh3[2]));
+            cout << endl;
+            cout << endl;
+            cout << "vh3" << endl;
+            cout << "vh3p1 = " << vh3pRef1 << endl;
+            cout << "vh3p2 = " << vh3pRef2 << endl;
+            cout << "vh3p3 = " << vh3pRef3 << endl;
+        }
+    }
+    if (!vh2Empty) {
+        orientate(s,triangles,vh2);
+        if (it != triangles.end()) {
+            orientate(s,triangles,vh3);
+        }
+    }
+
+
+}
+
+BMesh::Point Skeleton::toBMeshPoint(const point &p) {
+    BMesh::Point p2(p[0],p[1],p[2]);
+    return p2;
 }
 
 std::vector<Sphere*>& Skeleton::getBalls() {

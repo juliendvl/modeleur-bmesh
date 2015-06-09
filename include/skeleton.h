@@ -5,7 +5,9 @@
 #include "sphere.h"
 #include "segment.h"
 #include "mesh.h"
-
+using namespace std;
+typedef triangulation::Vertex_handle vhandle;
+typedef triangulation::Point point;
 /**
  * @brief Defines a skeleton
  */
@@ -118,6 +120,8 @@ private:
     void interpolation();
     std::vector<float> splitSpaces(const std::string &s);
     void sweepVoisin(int origin, int neighbor);
+    void orientate(Sphere* s, list<vector<vhandle> >& triangles, vector<vhandle>& vh);
+    BMesh::Point toBMeshPoint(const point& p);
 
 };
 

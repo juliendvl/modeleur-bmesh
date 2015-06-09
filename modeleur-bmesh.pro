@@ -4,13 +4,12 @@ CONFIG  += qt opengl warn_on debug
 QT *= xml opengl 
 INCLUDEPATH += src include Eigen/ nlopt/include/
 DEPENDPATH += src include
-
+QMAKE_CXXFLAGS += -frounding-math
 HEADERS  = include/*.h
 SOURCES  = src/*.cpp
 
 macx:LIBS *= -framework Glut
-linux-g++*:LIBS *= -lglut -lOpenMeshCored -lGLU -Lnlopt/lib -lnlopt
-
+linux-g++*:LIBS *= -lglut -lOpenMeshCored -lGLU -Lnlopt/lib -lnlopt -lCGAL -lgmp
 # MacOS, default
 QGL = -lqglviewer
 
