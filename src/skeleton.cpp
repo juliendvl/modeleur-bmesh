@@ -48,7 +48,7 @@ void Skeleton::init(Viewer &) {
 void Skeleton::draw() {
     float r_min = balls[0]->getRadius();
     float r;
-    for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
+    /*for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
         Sphere* s = *it;
 
         // Warning: some balls may be similar but identified with different
@@ -74,14 +74,6 @@ void Skeleton::draw() {
             r_min = r;
         }
 
-        /*if (s->valence() > 2) {
-            vector<BMesh::Point>& points = s->getPoints();
-            for (unsigned int i = 0; i < s->getPoints().size(); i++) {
-                BMesh::Point p = points[i];
-                Sphere* test = new Sphere(p[0],p[1],p[2],0.1);
-                test->draw();
-            }
-        }*/
     }
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {
@@ -102,7 +94,7 @@ void Skeleton::draw() {
     }
     for (unsigned int i = 0; i < pointsMesh.size(); i++) {
         pointsMesh[i]->draw();
-    }
+    }*/
 
     mesh.draw();
 }
@@ -538,7 +530,7 @@ void Skeleton::stitching() {
             // We search a triangle which has two points in the same mesh
             cout << "size de base = " << triangles.size() << endl;
             list<vector<vhandle> >::iterator it = triangles.begin();
-            vector<vhandle>& vh = *it;
+            vector<vhandle> vh = *it;
             p1 = toBMeshPoint(tr.point(vh[0]));
             p2 = toBMeshPoint(tr.point(vh[1]));
             p3 = toBMeshPoint(tr.point(vh[2]));
@@ -573,7 +565,7 @@ void Skeleton::stitching() {
                     vh[2] = tmp;
                 }
             }
-
+            triangles.remove(vh);
             cout << "avant orient" << endl;
             orientate(s,triangles,vh);
             cout << "apres orient" << endl;
@@ -589,6 +581,9 @@ void Skeleton::stitching() {
             }
         }
     }
+    m.request_vertex_normals();
+    m.request_face_normals();
+    m.update_normals();
 }
 
 void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vhandle> &vh) {
@@ -605,11 +600,7 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
     cout << "pRef3 = " << pRef3 << endl;
 
     //cout << s->valence() << endl;
-    cout << triangles.size() << endl;
-
-    // On enlève le triangle déjà orienté de la liste provisoire
-    triangles.remove(vh);
-    cout << "apres remove " << triangles.size() << endl;
+    cout << "TAILLE " << triangles.size() << endl;
 
     // On ajoute le triangle déjà orienté dans le tableau définitif
     s->getTriangles().push_back(vh);
@@ -621,9 +612,10 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
 
     // On commence au début de la liste
     list<vector<vhandle> >::iterator it = triangles.begin();
-    vector<vhandle>& vh2 = *it;
+    //vector<vhandle>& vh2 = *it;
+    vector<vhandle> vh2;
     BMesh::Point p1,p2,p3;
-    bool vh2Empty;
+    bool vh2Empty = false;
     int count = 0;
     // Tant qu'on n'a pas trouvé de triangles adjacents et qu'il y a des candidats
     while (it != triangles.end()) {
@@ -633,79 +625,129 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
         p1 = toBMeshPoint(tr.point(vh2[0]));
         p2 = toBMeshPoint(tr.point(vh2[1]));
         p3 = toBMeshPoint(tr.point(vh2[2]));
+        cout << "while1 p1 = " << p1 << endl;
+        cout << "while1 p2 = " << p2 << endl;
+        cout << "while1 p3 = " << p3 << endl;
+        cout << endl;
         // On teste s'il est adjacent
-        if (p1 == pRef1) {
+        if ((p1 == pRef1) && (p2 == pRef2)){
             // 1->2 => swap
-            if (p2 == pRef2) {
-                vhandle tmp = vh2[0];
-                vh2[0] = vh2[1];
-                vh2[1] = tmp;
-                break;
-            }
-            // 2->1 => ok
-            if (p2 == pRef3) {
-                break;
-            }
-            // 1->3 => ok
-            if (p3 == pRef2) {
-                break;
-            }
-            // 3->1 => swap
-            if (p3 == pRef3) {
-                vhandle tmp = vh2[0];
-                vh2[0] = vh2[2];
-                vh2[2] = tmp;
-                break;
-            }
+            triangles.remove(vh2);
+            vhandle tmp = vh2[0];
+            vh2[0] = vh2[1];
+            vh2[1] = tmp;
+            break;
         }
-        if (p2 == pRef1) {
+        if ((p1 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh2);
             // 2->1 => ok
-            if (p1 == pRef2) {
-                break;
-            }
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh2);
+            // 1->3 => ok
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->1 => swap
+            vhandle tmp = vh2[0];
+            vh2[0] = vh2[2];
+            vh2[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh2);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh2);
             // 1->2 => swap
-            if (p1 == pRef3) {
-                vhandle tmp = vh2[0];
-                vh2[0] = vh2[1];
-                vh2[1] = tmp;
-                break;
-            }
-            // 2->3 => swap
-            if (p3 == pRef2) {
-                vhandle tmp = vh2[1];
-                vh2[1] = vh2[2];
-                vh2[2] = tmp;
-                break;
-            }
-            // 3->2 => ok
-            if (p3 == pRef3) {
-                break;
-            }
+            vhandle tmp = vh2[1];
+            vh2[1] = vh2[0];
+            vh2[0] = tmp;
+            break;
         }
-        if (p3 == pRef1) {
+        if ((p2 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh2);
+            // 2->3 => swap
+            vhandle tmp = vh2[1];
+            vh2[1] = vh2[2];
+            vh2[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh2);
             // 3->1 => swap
-            if (p1 == pRef2) {
-                vhandle tmp = vh2[0];
-                vh2[0] = vh2[2];
-                vh2[2] = tmp;
-                break;
-            }
-            // 1->3 => ok
-            if (p1 == pRef3) {
-                break;
-            }
-            // 3->2 => ok
-            if (p2 == pRef2) {
-                break;
-            }
-            // 2->3 => swap
-            if (p2 == pRef3) {
-                vhandle tmp = vh2[2];
-                vh2[1] = vh2[2];
-                vh2[2] = tmp;
-                break;
-            }
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[0];
+            vh2[0] = tmp;
+            break;
         }
+        if ((p3 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->3 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef2)){
+            triangles.remove(vh2);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->3 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->2 => swap
+            vhandle tmp = vh2[0];
+            vh2[0] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->3 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->3 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->1 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[0];
+            vh2[0] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->2 => ok
+            break;
+        }
+        // Si le triangle n'est pas adjacent, on passe au suivant
         ++it;
     }
     cout << "count = " << count << endl;
@@ -713,91 +755,154 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
     if (it == triangles.end()) {
         vh2Empty = true;
     }
-    vector<vhandle>& vh3 = *(triangles.begin());
-    int count2 = 0;
-    while (it != triangles.end()) {
+
+    it = triangles.begin();
+    for (int i = 0; i < count-1; i++) {
         ++it;
+    }
+    vector<vhandle> vh3;
+    int count2 = 0;
+    // On cherche s'il y a un deuxième triangle adjacent
+    while (it != triangles.end()) {
+        // On passe au triangle suivant
+        ++it;
+        if (it == triangles.end()) {
+            break;
+        }
         count2++;
+        // On prend le nouveau triangle
         vh3 = *it;
         p1 = toBMeshPoint(tr.point(vh3[0]));
         p2 = toBMeshPoint(tr.point(vh3[1]));
         p3 = toBMeshPoint(tr.point(vh3[2]));
+        cout << "while2 p1 = " << p1 << endl;
+        cout << "while2 p2 = " << p2 << endl;
+        cout << "while2 p3 = " << p3 << endl;
+        cout << endl;
 
-        if (p1 == pRef1) {
+        // On teste s'il est adjacent
+        if ((p1 == pRef1) && (p2 == pRef2)){
+            triangles.remove(vh3);
             // 1->2 => swap
-            if (p2 == pRef2) {
-                vhandle tmp = vh3[0];
-                vh3[0] = vh3[1];
-                vh3[1] = tmp;
-                break;
-            }
-            // 2->1 => ok
-            if (p2 == pRef3) {
-                break;
-            }
-            // 1->3 => ok
-            if (p3 == pRef2) {
-                break;
-            }
-            // 3->1 => swap
-            if (p3 == pRef3) {
-                vhandle tmp = vh3[0];
-                vh3[0] = vh3[2];
-                vh3[2] = tmp;
-                break;
-            }
+            vhandle tmp = vh3[0];
+            vh3[0] = vh3[1];
+            vh3[1] = tmp;
+            break;
         }
-        if (p2 == pRef1) {
+        if ((p1 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh3);
             // 2->1 => ok
-            if (p1 == pRef2) {
-                break;
-            }
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh3);
+            // 1->3 => ok
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->1 => swap
+            vhandle tmp = vh3[0];
+            vh3[0] = vh3[2];
+            vh3[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh3);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh3);
             // 1->2 => swap
-            if (p1 == pRef3) {
-                vhandle tmp = vh3[0];
-                vh3[0] = vh3[1];
-                vh3[1] = tmp;
-                break;
-            }
-            // 2->3 => swap
-            if (p3 == pRef2) {
-                vhandle tmp = vh3[1];
-                vh3[1] = vh3[2];
-                vh3[2] = tmp;
-                break;
-            }
-            // 3->2 => ok
-            if (p3 == pRef3) {
-                break;
-            }
+            vhandle tmp = vh3[1];
+            vh3[1] = vh3[0];
+            vh3[0] = tmp;
+            break;
         }
-        if (p3 == pRef1) {
+        if ((p2 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh3);
+            // 2->3 => swap
+            vhandle tmp = vh3[1];
+            vh3[1] = vh3[2];
+            vh3[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh3);
             // 3->1 => swap
-            if (p1 == pRef2) {
-                vhandle tmp = vh3[0];
-                vh3[0] = vh3[2];
-                vh3[2] = tmp;
-                break;
-            }
-            // 1->3 => ok
-            if (p1 == pRef3) {
-                break;
-            }
-            // 3->2 => ok
-            if (p2 == pRef2) {
-                break;
-            }
-            // 2->3 => swap
-            if (p2 == pRef3) {
-                vhandle tmp = vh3[2];
-                vh3[1] = vh3[2];
-                vh3[2] = tmp;
-                break;
-            }
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[0];
+            vh3[0] = tmp;
+            break;
         }
+        if ((p3 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->3 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef2)){
+            triangles.remove(vh3);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->3 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->2 => swap
+            vhandle tmp = vh3[0];
+            vh3[0] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->3 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->3 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->1 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[0];
+            vh3[0] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->2 => ok
+            break;
+        }
+        // Si le triangle n'est pas adjacent, on passe au suivant
     }
     cout << "count2 = " << count2 << endl;
 
+    cout << "empty = " << vh2Empty << endl;
     if (!vh2Empty) {
         BMesh::Point vh2pRef1 = toBMeshPoint(tr.point(vh2[0]));
         BMesh::Point vh2pRef2 = toBMeshPoint(tr.point(vh2[1]));
@@ -809,7 +914,6 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
         cout << "vh2p2 = " << vh2pRef2 << endl;
         cout << "vh2p3 = " << vh2pRef3 << endl;
         if (it != triangles.end()) {
-            cout << "vh3 = " << endl;
             BMesh::Point vh3pRef1 = toBMeshPoint(tr.point(vh3[0]));
             BMesh::Point vh3pRef2 = toBMeshPoint(tr.point(vh3[1]));
             BMesh::Point vh3pRef3 = toBMeshPoint(tr.point(vh3[2]));
@@ -903,7 +1007,7 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
 
     setNeighbors();
 
-    /*for (unsigned int i = 0; i < balls.size(); i++) {
+    for (unsigned int i = 0; i < balls.size(); i++) {
         Sphere* s = balls[i];
         //if (balls[i]->valence() == 1) {
           //  cout << "end = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
@@ -911,7 +1015,7 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
         if (balls[i]->valence() == 2) {
             cout << "connection = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
         }
-    }*/
+    }
     return true;
 }
 
