@@ -1,5 +1,5 @@
 % On utilise Beamer (pour faire des slides)
-\documentclass[10pt]{beamer}
+\documentclass[9pt]{beamer}
 
 % Choix du thème
 \usetheme{Madrid}
@@ -28,6 +28,12 @@
 	\titlepage
 \end{frame}
 
+%% Cadre du projet %%
+\begin{frame}
+	\frametitle{À propos du projet}
+	\framesubtitle{Cadre}
+\end{frame}
+
 
 %% Sommaire
 \begin{frame}
@@ -37,6 +43,11 @@
 
 %% Pourquoi modéliser avec des sphères ?
 \section{Pourquoi modéliser avec des sphères ?}
+
+\begin{frame}
+	\frametitle{Sommaire}
+	\tableofcontents[currentsection]
+\end{frame}
 
 \begin{frame}
 	\frametitle{Pourquoi modéliser avec des sphères ?}
@@ -72,6 +83,11 @@
 %% Interface graphique
 \section{Présentation de l'outil}
 
+\begin{frame}
+	\frametitle{Sommaire}
+	\tableofcontents[currentsection]
+\end{frame}
+
 % Slide 1 (screenshot)
 \begin{frame}
 	\frametitle{Présentation de l'outil}
@@ -102,18 +118,147 @@
 
 
 %% Algorithme
-\section{Algorithme}
+\section{Présentation de l'algorithme}
+
+\begin{frame}
+	\frametitle{Sommaire}
+	\tableofcontents[currentsection]
+\end{frame}
 
 % Intro article
 \begin{frame}
 	\frametitle{À propos de l'article}
 	\begin{block}{Source}
-		\textit{B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes} \\
-		Zhongping Ji, Ligang Liu, Yigang Wang \\
-		\textit{Institute of Graphics and Image, Hangzhou Dianzi University, Chine} \\
-		\textit{Department of Mathematics, Zhejiang University, Chine}
+		\begin{center}
+			\textit{B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes} \\
+			Ji Zhongping, Liu Ligang, Wang Yigang \\ 
+			
+			Institute of Graphics and Image, Hangzhou Dianzi University, China \\
+			Department of Mathematics, Zhejiang University, China
+		\end{center}
 	\end{block}
 \end{frame}
+
+
+%% Tenseur de courbure %%
+\begin{frame}
+	\frametitle{Tenseur de courbure}
+	
+	\begin{block}{Définition}
+		Courbures et directions principales: valeurs et vecteurs propres de l'endomorphisme symétrique de
+		\textbf{Weingarten}
+	\end{block}
+	
+	\begin{block}{Détermination de W}
+		\begin{equation*}
+			W{(e_i^p)_u \choose (e_i^p)_v} = {(n_i - n_x)_u \choose (n_i - n_x)_v}
+		\end{equation*}
+		$e_i^p$: projection d'une arête incidente à \textbf{p} dans le plan tangent \\
+		$n_i$: normale au point $p_i$ \\
+		$((x)_u, (x)_v)$: coordonnées d'un point dans un repère orthonormé du plan tangent
+	\end{block}
+\end{frame}
+
+
+%% Subdivision du maillage
+\subsection{Subdivision du maillage}
+\begin{frame}
+	\frametitle{Subdivision du maillage}
+	
+	\begin{block}{Motivation}
+		Avoir un maillage plus fin et plus détaillé
+	\end{block}
+	
+	\begin{block}{Algorithme}
+		Algorithme de Catmull-Clark
+		\begin{itemize}
+			\item algorithme classique;
+			\item produit un maillage formé de quadrangles.
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+%% Résultat
+\begin{frame}
+	\frametitle{Subdivision du maillage}
+	\framesubtitle{Résultat}
+\end{frame}
+
+
+%% Mesh evolution %%
+\subsection{Évolution du maillage}
+
+%% Résultat: influence de T
+\begin{frame}
+	\frametitle{Résultats}
+	\framesubtitle{Influence de T}
+	
+	\begin{figure}[H]
+		\centering
+		\leavevmode
+  		\hbox{
+  			\includegraphics[scale=0.3]{images/evolution_t01.jpg}
+  			\hspace*{0.5cm} 
+     		\includegraphics[scale=0.3]{images/evolution_t03.jpg}
+     		\hspace*{0.5cm}  
+  		}
+  		\caption{T = 0.1 (à gauche) et T = 0.3 (à droite)}
+	\end{figure}
+\end{frame}
+
+
+%% Edge fairing %%
+\subsection{Edge Fairing}
+
+%% Motivation
+\begin{frame}
+	\frametitle{Edge Fairing}
+	\framesubtitle{Motivation}
+	
+	\begin{block}{Problème de l'évolution}
+		Détériore \textit{l'edge flow}
+	\end{block}
+	
+	\begin{block}{Solution ?}
+		Appliquer un \textit{fairing} local sur chaque point du maillage.
+	\end{block}
+	
+	\begin{block}{Prérequis}
+		Deux types de points:
+		\begin{itemize}
+			\item les points ayant exactement 4 voisins;
+			\item les points n'ayant pas 4 voisins et ceux dont les courbures principales sont identiques.
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+%% Principe
+\begin{frame}
+	\frametitle{Edge Fairing}
+	\framesubtitle{Principe}
+	
+	\begin{block}{Points de valence 4}
+		Pour un point \textbf{p}, minimiser:
+		\begin{equation*}
+			f(x) = |(a-x).e_v|^2 + |(b-x).e_u|^2 + |(c-x).e_v|^2 + |(d-x).e_u|^2
+		\end{equation*}
+		avec a,b,c,d projections des voisins de \textbf{p} dans son plan tangent et $e_u, e_v$ directions principales au point 				\textbf{p}
+	\end{block}
+	
+	\begin{block}{Autres points}
+		Umbrella operator: approximer le laplacien par $\mathcal{U}(p) = \displaystyle \frac{1}{n} \sum \limits_{i=1}^{n} p_i - p$, avec $p_i$ voisins directs de \textbf{p}.
+	\end{block}
+\end{frame}
+
+%% Résultats
+\begin{frame}
+	\frametitle{Edge Fairing}
+	\framesubtitle{Résultats}
+	
+	%% A FAIRE !
+\end{frame}
+
+
 
 
 
