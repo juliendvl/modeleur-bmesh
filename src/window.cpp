@@ -135,7 +135,7 @@ void Window::addSkeletonEdge() {
     int id2    = sphere2->value();
     int nBalls = skel->getBalls().size();
 
-    if (nBalls == 0)
+    if (nBalls == 0 || !sweep->isEnabled())
         return;
 
     // One ball does not exist

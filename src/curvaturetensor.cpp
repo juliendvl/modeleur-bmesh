@@ -1,6 +1,6 @@
 #include <iostream>
 #include <Eigen/Eigenvalues>
-#include "include/curvaturetensor.h"
+#include "curvaturetensor.h"
 #include "mathutils.h"
 
 using namespace std;
