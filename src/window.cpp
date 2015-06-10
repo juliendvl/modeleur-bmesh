@@ -243,6 +243,7 @@ void Window::doSweep() {
 
     saveMeshB->setEnabled(true);
     sweep->setEnabled(false);
+    catmullClark->setEnabled(true);
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
 
@@ -307,6 +308,7 @@ void Window::subdivide() {
     if (!skel->getMesh().subdivide())
         QMessageBox::critical(this, "Error", "Subdivision failed !");
 
+    stitch->setEnabled(false);
     catmullClark->setEnabled(false);
     evol->setEnabled(true);
 
