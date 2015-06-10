@@ -46,7 +46,6 @@ void Window::initGUI() {
     this->showBetween  = new QPushButton("Show inbetween-balls");
     this->sweep        = new QPushButton("Sweeping");
     this->stitch       = new QPushButton("Stitching");
-    stitch->setEnabled(false);
     this->catmullClark = new QPushButton("Subdivide Mesh");
     catmullClark->setEnabled(false);
     this->evol         = new QPushButton("Evolve mesh");
@@ -135,7 +134,7 @@ void Window::addSkeletonEdge() {
     int id2    = sphere2->value();
     int nBalls = skel->getBalls().size();
 
-    if (nBalls == 0)
+    if (nBalls == 0 || !sweep->isEnabled())
         return;
 
     // One ball does not exist
@@ -227,7 +226,7 @@ void Window::load() {
     // We can allow the user to click other buttons
     saveMeshB->setEnabled(false);
     sweep->setEnabled(true);
-    stitch->setEnabled(false);
+    stitch->setEnabled(true);
     catmullClark->setEnabled(false);
     evol->setEnabled(false);
     fair->setEnabled(false);
@@ -244,24 +243,32 @@ void Window::doSweep() {
 
     saveMeshB->setEnabled(true);
     sweep->setEnabled(false);
+    catmullClark->setEnabled(true);
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
-    stitch->setEnabled(true);
 
     // We stop mouse tracking
     viewer->setMouseTracking(false);
 
     // We do not need to generate again inbetween-balls
     this->generateBetweenBalls = false;
+
+    viewer->update();
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 void Window::doStitch() {
     // TODO: process stitching
+    skel->stitching();
+
+    if (sweep->isEnabled())
+        return;
 
     stitch->setEnabled(false);
     catmullClark->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -301,8 +308,11 @@ void Window::subdivide() {
     if (!skel->getMesh().subdivide())
         QMessageBox::critical(this, "Error", "Subdivision failed !");
 
+    stitch->setEnabled(false);
     catmullClark->setEnabled(false);
     evol->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -316,6 +326,8 @@ void Window::evolve() {
 
     evol->setEnabled(false);
     fair->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -328,6 +340,8 @@ void Window::fairing() {
 
     fair->setEnabled(false);
     catmullClark->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -336,7 +350,6 @@ void Window::doAll() {
     int nbSub = nbIter->value();
 
     doSweep();
-    doStitch();
 
     for (int i = 0; i < nbSub; ++i) {
         subdivide();

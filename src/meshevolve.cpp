@@ -6,6 +6,7 @@
 #include "curvaturetensor.h"
 
 using namespace std;
+using namespace Eigen;
 using OpenMesh::Vec3f;
 
 
@@ -62,7 +63,7 @@ bool MeshEvolve::evolve() {
             vector<BMesh::VertexHandle> neighbors;
             for (vv = m->vv_iter(*lit); vv.is_valid(); ++vv)
                 neighbors.push_back(*vv);
-            CurvatureTensor ct(*m);
+            CurvatureTensor ct(m);
             ct.compute(*lit, neighbors);
             vector<float> curvatures = ct.getCurvatures();
 
@@ -77,19 +78,22 @@ bool MeshEvolve::evolve() {
             if (mit.value() > Fmax)
                 Fmax = mit.value();
         dt = 0.75 * (step / Fmax);
-        //dt = 1.0;
-
-
 
         // We update positions and check if some points do not need to
         // evolve anymore
         for (mit = F.begin(); mit != F.end(); ++mit) {
             Vec3f p = m->point(mit.key());
+
             Vec3f n = scalarNormal(p);
-            Vec3f newPt = p + n * mit.value() * dt;
+            float temp = mit.value();
+            Vec3f newPt = p + n * temp * dt;
+
             m->set_point(mit.key(), newPt);
 
-            if ( scalarField(newPt) < eps )
+            float formerField = scalarField(p);
+            float newField = scalarField(newPt);
+
+            if ( newField < eps || newField > formerField)
                 points.remove(mit.key());
         }
     }
@@ -104,7 +108,7 @@ bool MeshEvolve::evolve() {
 
 ///////////////////////////////////////////////////////////////////////////////
 Vec3f MeshEvolve::scalarNormal(const Vec3f &p) {
-    const float eps = 1e-2;
+    const float eps = 1e-4;
 
     Vec3f dx(eps, 0.0, 0.0);
     Vec3f dy(0.0, eps, 0.0);
@@ -128,9 +132,11 @@ float MeshEvolve::fi(const Sphere *s, const Vec3f &p) {
     const float ALPHA = 1.5;
     float Ri = ALPHA * s->getRadius();
 
-    float rs = (p[0] - s->getX()) * (p[0] - s->getX())
-             + (p[1] - s->getY()) * (p[1] - s->getY())
-             + (p[2] - s->getZ()) * (p[2] - s->getZ());
+    float cx = p[0] - s->getX();
+    float cy = p[1] - s->getY();
+    float cz = p[2] - s->getZ();
+
+    float rs = cx*cx + cy*cy + cz*cz;
 
     if (rs > Ri*Ri) {
         return 0;
@@ -147,8 +153,9 @@ float MeshEvolve::scalarField(const Vec3f &p) {
     float res = 0.0;
     const float T = 0.1;
 
-    for (unsigned int i = 0; i < balls.size(); ++i)
+    for (unsigned int i = 0; i < balls.size(); ++i) {
         res += fi(balls[i], p);
+    }
     return (res - T);
 }
 

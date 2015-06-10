@@ -3,9 +3,11 @@
 #include <limits>
 #include "skeleton.h"
 #include "cylinder.h"
+#include <cassert>
 
 using namespace std;
 using OpenMesh::Vec3f;
+typedef triangulation::Cell_handle cell_handle;
 
 Skeleton::Skeleton() : drawBetween(false)
 {
@@ -69,6 +71,7 @@ void Skeleton::draw() {
         if (r < r_min) {
             r_min = r;
         }
+
     }
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {
@@ -86,9 +89,6 @@ void Skeleton::draw() {
                 }
             }
         }
-    }
-    for (unsigned int i = 0; i < pointsMesh.size(); i++) {
-        pointsMesh[i]->draw();
     }
 
     mesh.draw();
@@ -121,14 +121,21 @@ void Skeleton::interpolation() {
             if (sg != NULL) {
                 Sphere* s1 = balls[i];
                 Sphere* s2 = balls[j];
+                /*if (s1->valence() < s2->valence()) {
+                    s1 = balls[j];
+                    s2 = balls[i];
+                }*/
                 float r1 = s1->getRadius();
                 float r2 = s2->getRadius();
                 float x1 = s1->getX();
                 float y1 = s1->getY();
                 float z1 = s1->getZ();
-                float dx = s2->getX()-x1;
-                float dy = s2->getY()-y1;
-                float dz = s2->getZ()-z1;
+                float x2 = s2->getX();
+                float y2 = s2->getY();
+                float z2 = s2->getZ();
+                float dx = x2-x1;
+                float dy = y2-y1;
+                float dz = z2-z1;
                 float dist = sqrt(dx*dx + dy*dy + dz*dz);
                 // If there is an intersection, don't draw the inbetweenballs
                 if (r1 + r2 > dist) {
@@ -156,6 +163,27 @@ void Skeleton::interpolation() {
                     x1 = x1 + r*dx;
                     y1 = y1 + r*dy;
                     z1 = z1 + r*dz;
+                }
+
+                dx = -dx;
+                dy = -dy;
+                dz = -dz;
+
+                if (r2 < r1) {
+                    max = (2*dist-r1+r2)/(r2+r1);
+                } else {
+                    max = (2*dist-r2+r1)/(r2+r1);
+                }
+                h = (r1-r2)/max;
+                for (int k = 1; k <= max; k++) {
+                    float r = r2 + h*k;
+                    sg->getInBetweenBallsInverse().push_back(new Sphere(x2 + r*dx,
+                                                                        y2 + r*dy,
+                                                                        z2 + r*dz,
+                                                                        r));
+                    x2 = x2 + r*dx;
+                    y2 = y2 + r*dy;
+                    z2 = z2 + r*dz;
                 }
             }
         }
@@ -205,10 +233,10 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
     Vec3f axe_x,axe_y,axe_z;
     Vec3f axe2_x, axe3_x, axe3_y, axe3_z;
     Vec3f axe_Z(0,0,1);
+    float coef = 2.0;
+    std::vector<BMesh::Point> group,group2;
     // If it hasn't been sweeped
     if (!n->getSweeped()) {
-        //cout << "o = " << origin << " et n = " << neighbor << endl;
-        //cout << "valo = " << o->valence() << " valn = " << n->valence() << endl;
         // If it is an end or connection node, it is sweeped
         if ((n->valence() == 1) || (n->valence() == 2)) {
             n->setSweeped(true);
@@ -239,22 +267,34 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         }
 
         Segment* sg = edges[origin][neighbor];
+        std::vector<Sphere*> inbetweenballs;
         if (sg == NULL) {
             sg = edges[neighbor][origin];
+            // If the origin is a joint node or a connection which has got sweeped,
+            // we sweep the inbetweenballs in the other way
+            if ((o->valence() > 2) || ((o->valence() == 2) && (o->getSweeped()))) {
+                inbetweenballs = sg->getInBetweenBallsInverse();
+            } else {
+                inbetweenballs = sg->getInBetweenBalls();
+            }
+        } else {
+           inbetweenballs = sg->getInBetweenBalls();
         }
-
-        std::vector<Sphere*> inbetweenballs = sg->getInBetweenBalls();
         if (inbetweenballs.size() > 2) {
             Sphere* b = inbetweenballs[1];
             cx = b->getX();
             cy = b->getY();
             cz = b->getZ();
             r = b->getRadius();
-
             for (int k = 0; k <= 3; k++) {
-                vhandle.push_back(m.add_vertex(BMesh::Point(cx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                            cy + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                            cz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                BMesh::Point p(cx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                        cy + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                        cz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
+                vhandle.push_back(m.add_vertex(p));
+                if (o->valence() > 2){
+                    o->getTriangulation().insert(point(p[0],p[1],p[2]));
+                    group.push_back(p);
+                }
             }
 
             // If the origin is a connection node, we buill the mesh
@@ -273,9 +313,10 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
                 cz = b->getZ();
                 r = b->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(cx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                                cy + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                                cz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                    BMesh::Point p(cx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                            cy + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                            cz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
+                    vhandle.push_back(m.add_vertex(p));
                 }
 
                 createFaces(vhandle,false);
@@ -286,9 +327,10 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             if ((n->valence() == 1)) {
                 r = n->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                                ny + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                                nz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                    BMesh::Point p(nx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                            ny + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                            nz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
+                    vhandle.push_back(m.add_vertex(p));
                 }
                 createFaces(vhandle,false);
             } else if (n->valence() == 2) {
@@ -324,9 +366,10 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
 
                 r = n->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[0] + sin(M_PI/4.0*(2*k+1))*axe3_z[0]),
-                                                                ny + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[1] + sin(M_PI/4.0*(2*k+1))*axe3_z[1]),
-                                                                nz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[2] + sin(M_PI/4.0*(2*k+1))*axe3_z[2]))));
+                    BMesh::Point p(nx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[0] + sin(M_PI/4.0*(2*k+1))*axe3_z[0]),
+                            ny + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[1] + sin(M_PI/4.0*(2*k+1))*axe3_z[1]),
+                            nz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[2] + sin(M_PI/4.0*(2*k+1))*axe3_z[2]));
+                    vhandle.push_back(m.add_vertex(p));
                 }
                 createFaces(vhandle,false);
 
@@ -338,9 +381,14 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             if ((n->valence() == 1)) {
                 r = n->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                                ny + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                                nz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                    BMesh::Point p(nx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                            ny + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                            nz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
+                    vhandle.push_back(m.add_vertex(p));
+                    if (o->valence() > 2){
+                        o->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group.push_back(p);
+                    }
                 }
             } else if (n->valence() == 2) {
                 Sphere* n2;
@@ -375,9 +423,14 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
 
                 r = n->getRadius();
                 for (int k = 0; k <= 3; k++) {
-                    vhandle.push_back(m.add_vertex(BMesh::Point(nx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[0] + sin(M_PI/4.0*(2*k+1))*axe3_z[0]),
-                                                                ny + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[1] + sin(M_PI/4.0*(2*k+1))*axe3_z[1]),
-                                                                nz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[2] + sin(M_PI/4.0*(2*k+1))*axe3_z[2]))));
+                    BMesh::Point p(nx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[0] + sin(M_PI/4.0*(2*k+1))*axe3_z[0]),
+                            ny + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[1] + sin(M_PI/4.0*(2*k+1))*axe3_z[1]),
+                            nz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe3_y[2] + sin(M_PI/4.0*(2*k+1))*axe3_z[2]));
+                    vhandle.push_back(m.add_vertex(p));
+                    if (o->valence() > 2){
+                        o->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group.push_back(p);
+                    }
                 }
             }
             if ((n->valence() == 1) || (n->valence() == 2)) {
@@ -392,25 +445,55 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
             }
         }
 
+        if ((o->valence() > 2) && (group.size() != 0)) {
+            o->getGroupPoints().push_back(group);
+        }
+
         // If it is an end node, we close the mesh
         if (n->valence() == 1) {
             cx = nx + r*axe_x[0];
             cy = ny + r*axe_x[1];
             cz = nz + r*axe_x[2];
             for (int k = 0; k <= 3; k++) {
-                vhandle.push_back(m.add_vertex(BMesh::Point(cx + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
-                                                            cy + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
-                                                            cz + 1.1*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]))));
+                BMesh::Point p(cx + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[0] + sin(M_PI/4.0*(2*k+1))*axe_z[0]),
+                        cy + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[1] + sin(M_PI/4.0*(2*k+1))*axe_z[1]),
+                        cz + coef*r*(cos(M_PI/4.0*(2*k+1))*axe_y[2] + sin(M_PI/4.0*(2*k+1))*axe_z[2]));
+                vhandle.push_back(m.add_vertex(p));
             }
             createFaces(vhandle, true);
 
         } else if (n->valence() == 2) {
             // Research of the other neighbor of the connection node
             if (n->getNeighbors()[0] == origin) {
-                sweepVoisin(neighbor, n->getNeighbors()[1]);
+                int neighbor2 = n->getNeighbors()[1];
+                sweepVoisin(neighbor, neighbor2);
             } else {
-                sweepVoisin(neighbor, n->getNeighbors()[0]);
+                int neighbor2 = n->getNeighbors()[0];
+                sweepVoisin(neighbor, neighbor2);
             }
+        } else {
+            if (vhandle.size() != 0) {
+                if (o->valence() > 2) {
+                    for (int k = 4; k > 0; k--) {
+                        BMesh::Point p = m.point(vhandle[vhandle.size()-k]);
+                        n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group2.push_back(p);
+                    }
+                } else {
+                    for (int k = 0; k < 4; k++) {
+                        BMesh::Point p = m.point(vhandle[k]);
+                        n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group2.push_back(p);
+                    }
+                }
+            } else {
+                for (int k = 0; k < 4; k++) {
+                    BMesh::Point p = m.point(vhandle2[k]);
+                    n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                    group2.push_back(p);
+                }
+            }
+            n->getGroupPoints().push_back(group2);
         }
 
     }
@@ -461,6 +544,392 @@ void Skeleton::createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNo
         face_vhandles.push_back(vhandle[last]);
         m.add_face(face_vhandles);
     }
+}
+
+void Skeleton::stitching() {
+    BMesh& m = mesh.getMesh();
+    std::vector<BMesh::VertexHandle> face_vhandles;
+    BMesh::Point p1,p2,p3;
+    for (unsigned int i = 0; i < balls.size(); i++) {
+        Sphere* s = balls[i];
+        if (s->valence() > 2) {
+            triangulation& tr = s->getTriangulation();
+            list<cell_handle> cells;
+            tr.incident_cells(tr.infinite_vertex(),std::back_inserter(cells));
+
+            list<vector<vhandle> > triangles;
+            for(list<cell_handle>::iterator it = cells.begin(); it!=cells.end(); ++it) {
+                vector<vhandle> vh0;
+                cell_handle& cell = *it;
+                for(int k = 0; k < 4; ++k) {
+                    if(!tr.is_infinite(cell->vertex(k))) {
+                        vh0.push_back(cell->vertex(k));
+                    }
+                }
+                triangles.push_back(vh0);
+            }
+
+            list<vector<vhandle> >::iterator it = triangles.begin();
+            vector<vhandle> vh = *it;
+            p1 = toBMeshPoint(tr.point(vh[0]));
+            p2 = toBMeshPoint(tr.point(vh[1]));
+            p3 = toBMeshPoint(tr.point(vh[2]));
+            int first1,first2,first3;
+            while (!s->inTheSameGroup(p1,p2,first1) && !s->inTheSameGroup(p3,p1,first3)
+                   && !s->inTheSameGroup(p2,p3,first2) && (it != triangles.end())) {
+                ++it;
+                vh = *it;
+                p1 = toBMeshPoint(tr.point(vh[0]));
+                p2 = toBMeshPoint(tr.point(vh[1]));
+                p3 = toBMeshPoint(tr.point(vh[2]));
+            }
+
+            if (s->inTheSameGroup(p1,p2,first1)) {
+                // If the edge of the triangle is in the same direction
+                // as the mesh's one, we swap the two points
+                if (first1 == 1) {
+                    vhandle tmp = vh[0];
+                    vh[0] = vh[1];
+                    vh[1] = tmp;
+                }
+            } else if (s->inTheSameGroup(p3,p1,first3)) {
+                if (first3 == 1) {
+                    vhandle tmp = vh[0];
+                    vh[0] = vh[2];
+                    vh[2] = tmp;
+                }
+            } else if (s->inTheSameGroup(p2,p3,first2)) {
+                if (first2 == 1) {
+                    vhandle tmp = vh[1];
+                    vh[1] = vh[2];
+                    vh[2] = tmp;
+                }
+            }
+            triangles.remove(vh);
+            orientate(s,triangles,vh);
+
+            for (vector<vector<vhandle> >::iterator it = s->getTriangles().begin(); it!=s->getTriangles().end(); ++it) {
+                vector<vhandle> vh = *it;
+                face_vhandles.clear();
+                face_vhandles.push_back(m.add_vertex(toBMeshPoint(tr.point(vh[0]))));
+                face_vhandles.push_back(m.add_vertex(toBMeshPoint(tr.point(vh[1]))));
+                face_vhandles.push_back(m.add_vertex(toBMeshPoint(tr.point(vh[2]))));
+                m.add_face(face_vhandles);
+            }
+        }
+    }
+    m.request_vertex_normals();
+    m.request_face_normals();
+    m.update_normals();
+}
+
+void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vhandle> &vh) {
+    triangulation& tr = s->getTriangulation();
+    // On prend les points de référence déjà orientés
+    BMesh::Point pRef1 = toBMeshPoint(tr.point(vh[0]));
+    BMesh::Point pRef2 = toBMeshPoint(tr.point(vh[1]));
+    BMesh::Point pRef3 = toBMeshPoint(tr.point(vh[2]));
+
+    // On ajoute le triangle déjà orienté dans le tableau définitif
+    s->getTriangles().push_back(vh);
+
+    // All the triangles are oriented correctly
+    if (triangles.size() == 0) {
+        return;
+    }
+
+    // On commence au début de la liste
+    list<vector<vhandle> >::iterator it = triangles.begin();
+    vector<vhandle> vh2;
+    BMesh::Point p1,p2,p3;
+    bool vh2Null = false;
+    int count = 0;
+    // Tant qu'on n'a pas trouvé de triangles adjacents et qu'il y a des candidats
+    while (it != triangles.end()) {
+        // On prend le triangle
+        vh2 = *it;
+        p1 = toBMeshPoint(tr.point(vh2[0]));
+        p2 = toBMeshPoint(tr.point(vh2[1]));
+        p3 = toBMeshPoint(tr.point(vh2[2]));
+        // On teste s'il est adjacent
+        if ((p1 == pRef1) && (p2 == pRef2)){
+            // 1->2 => swap
+            triangles.remove(vh2);
+            vhandle tmp = vh2[0];
+            vh2[0] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->1 => ok
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh2);
+            // 1->3 => ok
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->1 => swap
+            vhandle tmp = vh2[0];
+            vh2[0] = vh2[2];
+            vh2[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh2);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->2 => swap
+            vhandle tmp = vh2[1];
+            vh2[1] = vh2[0];
+            vh2[0] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh2);
+            // 2->3 => swap
+            vhandle tmp = vh2[1];
+            vh2[1] = vh2[2];
+            vh2[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh2);
+            // 3->1 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[0];
+            vh2[0] = tmp;
+            break;
+        }
+        if ((p3 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->3 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef2)){
+            triangles.remove(vh2);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->3 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->2 => swap
+            vhandle tmp = vh2[0];
+            vh2[0] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 1->3 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh2);
+            // 2->3 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[1];
+            vh2[1] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->1 => swap
+            vhandle tmp = vh2[2];
+            vh2[2] = vh2[0];
+            vh2[0] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh2);
+            // 3->2 => ok
+            break;
+        }
+        // Si le triangle n'est pas adjacent, on passe au suivant
+        ++it;
+        count++;
+    }
+
+    if (it == triangles.end()) {
+        vh2Null = true;
+    }
+
+    it = triangles.begin();
+    for (int i = 0; i < count; i++) {
+        ++it;
+    }
+    vector<vhandle> vh3;
+    // On cherche s'il y a un deuxième triangle adjacent
+    while (it != triangles.end()) {
+        // On passe au triangle suivant
+        ++it;
+        if (it == triangles.end()) {
+            break;
+        }
+        // On prend le nouveau triangle
+        vh3 = *it;
+        p1 = toBMeshPoint(tr.point(vh3[0]));
+        p2 = toBMeshPoint(tr.point(vh3[1]));
+        p3 = toBMeshPoint(tr.point(vh3[2]));
+
+        // On teste s'il est adjacent
+        if ((p1 == pRef1) && (p2 == pRef2)){
+            triangles.remove(vh3);
+            // 1->2 => swap
+            vhandle tmp = vh3[0];
+            vh3[0] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->1 => ok
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh3);
+            // 1->3 => ok
+            break;
+        }
+        if ((p1 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->1 => swap
+            vhandle tmp = vh3[0];
+            vh3[0] = vh3[2];
+            vh3[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh3);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->2 => swap
+            vhandle tmp = vh3[1];
+            vh3[1] = vh3[0];
+            vh3[0] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p3 == pRef2)) {
+            triangles.remove(vh3);
+            // 2->3 => swap
+            vhandle tmp = vh3[1];
+            vh3[1] = vh3[2];
+            vh3[2] = tmp;
+            break;
+        }
+        if ((p2 == pRef1) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p1 == pRef2)) {
+            triangles.remove(vh3);
+            // 3->1 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[0];
+            vh3[0] = tmp;
+            break;
+        }
+        if ((p3 == pRef1) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->3 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef2)){
+            triangles.remove(vh3);
+            // 3->2 => ok
+            break;
+        }
+        if ((p3 == pRef1) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->3 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->2 => swap
+            vhandle tmp = vh3[0];
+            vh3[0] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p1 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 1->3 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->1 => ok
+            break;
+        }
+        if ((p2 == pRef2) && (p3 == pRef3)) {
+            triangles.remove(vh3);
+            // 2->3 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[1];
+            vh3[1] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p1 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->1 => swap
+            vhandle tmp = vh3[2];
+            vh3[2] = vh3[0];
+            vh3[0] = tmp;
+            break;
+        }
+        if ((p3 == pRef2) && (p2 == pRef3)) {
+            triangles.remove(vh3);
+            // 3->2 => ok
+            break;
+        }
+        // Si le triangle n'est pas adjacent, on passe au suivant
+    }
+
+    if (!vh2Null) {
+        orientate(s,triangles,vh2);
+        if (it != triangles.end()) {
+            orientate(s,triangles,vh3);
+        }
+    }
+
+
+}
+
+BMesh::Point Skeleton::toBMeshPoint(const point &p) {
+    BMesh::Point p2(p[0],p[1],p[2]);
+    return p2;
 }
 
 std::vector<Sphere*>& Skeleton::getBalls() {

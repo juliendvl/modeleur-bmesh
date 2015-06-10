@@ -17,7 +17,7 @@ public:
      * @brief Constructor
      * @param m Mesh to work with
      */
-    CurvatureTensor(const BMesh &m);
+    CurvatureTensor(BMesh *m);
 
     /**
      * @brief Computes the Weingarten matrix, and sets its eigenvalues and
@@ -51,7 +51,7 @@ public:
 
 
 private:
-    BMesh m;
+    BMesh *m;
     BMesh::VertexHandle p;
     std::vector<BMesh::VertexHandle> neighbors;
 

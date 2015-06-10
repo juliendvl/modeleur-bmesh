@@ -21,6 +21,10 @@ std::vector<Sphere*>& Segment::getInBetweenBalls() {
     return this->inbetweenballs;
 }
 
+std::vector<Sphere*>& Segment::getInBetweenBallsInverse() {
+    return this->inbetweenballsInverse;
+}
+
 std::vector<BMesh::Point>& Segment::getPoints() {
     return this->pointsMesh;
 }

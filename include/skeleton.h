@@ -5,7 +5,9 @@
 #include "sphere.h"
 #include "segment.h"
 #include "mesh.h"
-
+using namespace std;
+typedef triangulation::Vertex_handle vhandle;
+typedef triangulation::Point point;
 /**
  * @brief Defines a skeleton
  */
@@ -101,6 +103,10 @@ public:
      */
     void sweeping();
 
+    /**
+     * @brief Performs stitching
+     */
+    void stitching();
 
 private:
     std::vector<Sphere*> balls;                 // Balls
@@ -110,13 +116,13 @@ private:
     bool drawBetween;
 
     Mesh mesh;
-    std::vector<Sphere*> pointsMesh;
 
     // PRIVATE METHODS
-    void createFaces(Segment* sg);
     void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
     std::vector<float> splitSpaces(const std::string &s);
     void sweepVoisin(int origin, int neighbor);
+    void orientate(Sphere* s, list<vector<vhandle> >& triangles, vector<vhandle>& vh);
+    BMesh::Point toBMeshPoint(const point& p);
 
 };
 

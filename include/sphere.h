@@ -4,6 +4,18 @@
 #include <QGLViewer/manipulatedFrame.h>
 #include <vector>
 
+#include "renderable.h"
+#include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
+# include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+# include <CGAL/Delaunay_triangulation_3.h>
+# include <CGAL/Triangulation_vertex_base_with_info_3.h>
+
+typedef OpenMesh::PolyMesh_ArrayKernelT<> BMesh;
+typedef CGAL::Epick kernel;
+typedef CGAL::Triangulation_vertex_base_with_info_3<BMesh::Point,kernel > vertex_base;
+typedef CGAL::Triangulation_data_structure_3< vertex_base > triangulation_data_structure;
+typedef CGAL::Delaunay_triangulation_3< kernel, triangulation_data_structure > triangulation;
+typedef triangulation::Vertex_handle vhandle;
 
 /**
  * @brief Ball used for the skeleton
@@ -67,6 +79,11 @@ public:
     std::vector<int>  getNeighbors() const;
     std::vector<int>& getNeighbors();
 
+    triangulation& getTriangulation();
+
+    std::vector<std::vector<vhandle> >& getTriangles();
+    std::vector<std::vector<BMesh::Point> >& getGroupPoints();
+
     /**
      * @brief Sets the radius of the ball
      * @param radius new radius
@@ -129,6 +146,10 @@ public:
      */
     void operator=(const Sphere& s);
 
+    bool inTheSameGroup(BMesh::Point& p1, BMesh::Point& p2, int& first);
+
+    void inGroup(BMesh::Point& p, int& numGroup, int& numPoint);
+
 
 protected:
     /**
@@ -153,6 +174,10 @@ private:
     bool sweeped;
 
     std::vector<int> neighbors;
+    std::vector<BMesh::Point> points;
+    triangulation tr;
+    std::vector<std::vector<vhandle> > triangles;
+    std::vector<std::vector<BMesh::Point> > groupPoints;
 };
 
 /**
@@ -162,5 +187,7 @@ private:
  * @return
  */
 std::ostream& operator<<(std::ostream &out, const Sphere &s);
+
+bool operator==(BMesh::Point& p1, BMesh::Point& p2);
 
 #endif

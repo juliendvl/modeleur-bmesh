@@ -85,6 +85,18 @@ std::vector<int> Sphere::getNeighbors() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+triangulation& Sphere::getTriangulation() {
+    return this->tr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+std::vector<std::vector<vhandle> >& Sphere::getTriangles() {
+    return this->triangles;
+}
+///////////////////////////////////////////////////////////////////////////////
+std::vector<std::vector<BMesh::Point> >& Sphere::getGroupPoints() {
+    return this->groupPoints;
+}
 std::vector<int>& Sphere::getNeighbors() {
     return this->neighbors;
 }
@@ -154,6 +166,37 @@ void Sphere::setColor(float r, float g, float b) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+bool Sphere::inTheSameGroup(BMesh::Point& p1, BMesh::Point& p2, int& first) {
+    int numGroup1, numGroup2, numPoint1, numPoint2;
+    inGroup(p1, numGroup1, numPoint1);
+    inGroup(p2, numGroup2, numPoint2);
+    if ((numGroup1 != -1) && (numGroup2 != -1) && (numGroup1 == numGroup2)) {
+        if (numPoint1 < numPoint2) {
+            first = 1;
+        } else {
+            first = 2;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void Sphere::inGroup(BMesh::Point& p, int& numGroup, int& numPoint) {
+    for (unsigned int i = 0; i < groupPoints.size(); i++) {
+        std::vector<BMesh::Point> group = groupPoints[i];
+        for (unsigned int j = 0; j < group.size(); j++) {
+           if (group[j] == p) {
+               numGroup = i;
+               numPoint = j;
+               return;
+           }
+        }
+    }
+    numGroup = -1;
+    numPoint = -1;
+}
 void Sphere::wheelEvent(QWheelEvent* const event, Camera* const camera) {
     Qt::KeyboardModifiers modifiers = event->modifiers();
 
@@ -167,10 +210,14 @@ void Sphere::wheelEvent(QWheelEvent* const event, Camera* const camera) {
     }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 std::ostream& operator<<(std::ostream &out, const Sphere &s) {
     out << "x = " << s.getX() << "; y = " << s.getY();
     out << "; z = " << s.getZ() << "; r = " << s.getRadius();
     return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+bool operator==(BMesh::Point& p1, BMesh::Point& p2) {
+    return (fabs(p1[0]-p2[0]) < 1e-8) && (fabs(p1[1]-p2[1]) < 1e-8) && (fabs(p1[2]-p2[2]) < 1e-8);
 }
