@@ -111,10 +111,8 @@ private:
     bool drawBetween;
 
     Mesh mesh;
-    std::vector<Sphere*> pointsMesh;
 
     // PRIVATE METHODS
-    void createFaces(Segment* sg);
     void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
     void setNeighbors();
     void interpolation();

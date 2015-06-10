@@ -48,7 +48,7 @@ void Skeleton::init(Viewer &) {
 void Skeleton::draw() {
     float r_min = balls[0]->getRadius();
     float r;
-    /*for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
+    for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
         Sphere* s = *it;
 
         // Warning: some balls may be similar but identified with different
@@ -56,8 +56,7 @@ void Skeleton::draw() {
         // joint or connection nodes
         switch (s->valence()) {
         case 0:
-            s->setColor(0.0, 1.0, 0.0);
-            break;
+            continue;
         case 1:
             s->setColor(1.0, 1.0, 0.0);
             break;
@@ -92,9 +91,6 @@ void Skeleton::draw() {
             }
         }
     }
-    for (unsigned int i = 0; i < pointsMesh.size(); i++) {
-        pointsMesh[i]->draw();
-    }*/
 
     mesh.draw();
 }
@@ -116,14 +112,21 @@ void Skeleton::interpolation() {
             if (sg != NULL) {
                 Sphere* s1 = balls[i];
                 Sphere* s2 = balls[j];
+                /*if (s1->valence() < s2->valence()) {
+                    s1 = balls[j];
+                    s2 = balls[i];
+                }*/
                 float r1 = s1->getRadius();
                 float r2 = s2->getRadius();
                 float x1 = s1->getX();
                 float y1 = s1->getY();
                 float z1 = s1->getZ();
-                float dx = s2->getX()-x1;
-                float dy = s2->getY()-y1;
-                float dz = s2->getZ()-z1;
+                float x2 = s2->getX();
+                float y2 = s2->getY();
+                float z2 = s2->getZ();
+                float dx = x2-x1;
+                float dy = y2-y1;
+                float dz = z2-z1;
                 float dist = sqrt(dx*dx + dy*dy + dz*dz);
                 // If there is an intersection, don't draw the inbetweenballs
                 if (r1 + r2 > dist) {
@@ -151,6 +154,27 @@ void Skeleton::interpolation() {
                     x1 = x1 + r*dx;
                     y1 = y1 + r*dy;
                     z1 = z1 + r*dz;
+                }
+
+                dx = -dx;
+                dy = -dy;
+                dz = -dz;
+
+                if (r2 < r1) {
+                    max = (2*dist-r1+r2)/(r2+r1);
+                } else {
+                    max = (2*dist-r2+r1)/(r2+r1);
+                }
+                h = (r1-r2)/max;
+                for (int k = 1; k <= max; k++) {
+                    float r = r2 + h*k;
+                    sg->getInBetweenBallsInverse().push_back(new Sphere(x2 + r*dx,
+                                                                        y2 + r*dy,
+                                                                        z2 + r*dz,
+                                                                        r));
+                    x2 = x2 + r*dx;
+                    y2 = y2 + r*dy;
+                    z2 = z2 + r*dz;
                 }
             }
         }
@@ -201,8 +225,6 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
     std::vector<BMesh::Point> group,group2;
     // If it hasn't been sweeped
     if (!n->getSweeped()) {
-        //cout << "o = " << origin << " et n = " << neighbor << endl;
-        //cout << "valo = " << o->valence() << " valn = " << n->valence() << endl;
         // If it is an end or connection node, it is sweeped
         if ((n->valence() == 1) || (n->valence() == 2)) {
             n->setSweeped(true);
@@ -233,11 +255,19 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         }
 
         Segment* sg = edges[origin][neighbor];
+        std::vector<Sphere*> inbetweenballs;
         if (sg == NULL) {
             sg = edges[neighbor][origin];
+            // If the origin is a joint node or a connection which has got sweeped,
+            // we sweep the inbetweenballs in the other way
+            if ((o->valence() > 2) || ((o->valence() == 2) && (o->getSweeped()))) {
+                inbetweenballs = sg->getInBetweenBallsInverse();
+            } else {
+                inbetweenballs = sg->getInBetweenBalls();
+            }
+        } else {
+           inbetweenballs = sg->getInBetweenBalls();
         }
-
-        std::vector<Sphere*> inbetweenballs = sg->getInBetweenBalls();
         if (inbetweenballs.size() > 2) {
             Sphere* b = inbetweenballs[1];
             cx = b->getX();
@@ -423,16 +453,26 @@ void Skeleton::sweepVoisin(int origin, int neighbor) {
         } else if (n->valence() == 2) {
             // Research of the other neighbor of the connection node
             if (n->getNeighbors()[0] == origin) {
-                sweepVoisin(neighbor, n->getNeighbors()[1]);
+                int neighbor2 = n->getNeighbors()[1];
+                sweepVoisin(neighbor, neighbor2);
             } else {
-                sweepVoisin(neighbor, n->getNeighbors()[0]);
+                int neighbor2 = n->getNeighbors()[0];
+                sweepVoisin(neighbor, neighbor2);
             }
         } else {
             if (vhandle.size() != 0) {
-                for (int k = 4; k > 0; k--) {
-                    BMesh::Point p = m.point(vhandle[vhandle.size()-k]);
-                    n->getTriangulation().insert(point(p[0],p[1],p[2]));
-                    group2.push_back(p);
+                if (o->valence() > 2) {
+                    for (int k = 4; k > 0; k--) {
+                        BMesh::Point p = m.point(vhandle[vhandle.size()-k]);
+                        n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group2.push_back(p);
+                    }
+                } else {
+                    for (int k = 0; k < 4; k++) {
+                        BMesh::Point p = m.point(vhandle[k]);
+                        n->getTriangulation().insert(point(p[0],p[1],p[2]));
+                        group2.push_back(p);
+                    }
                 }
             } else {
                 for (int k = 0; k < 4; k++) {
@@ -517,18 +557,6 @@ void Skeleton::stitching() {
                 triangles.push_back(vh0);
             }
 
-            cout << "les triangles " << endl;
-            for (list<vector<vhandle> >::iterator it2 = triangles.begin(); it2 != triangles.end(); ++it2) {
-                    vector<vhandle>& vhtest = *it2;
-                    cout << "p1 = " << toBMeshPoint(tr.point(vhtest[0])) << endl;
-                    cout << "p2 = " << toBMeshPoint(tr.point(vhtest[1])) << endl;
-                    cout << "p3 = " << toBMeshPoint(tr.point(vhtest[2])) << endl;
-                    cout << endl;
-            }
-            cout << endl;
-
-            // We search a triangle which has two points in the same mesh
-            cout << "size de base = " << triangles.size() << endl;
             list<vector<vhandle> >::iterator it = triangles.begin();
             vector<vhandle> vh = *it;
             p1 = toBMeshPoint(tr.point(vh[0]));
@@ -566,10 +594,7 @@ void Skeleton::stitching() {
                 }
             }
             triangles.remove(vh);
-            cout << "avant orient" << endl;
             orientate(s,triangles,vh);
-            cout << "apres orient" << endl;
-
 
             for (vector<vector<vhandle> >::iterator it = s->getTriangles().begin(); it!=s->getTriangles().end(); ++it) {
                 vector<vhandle> vh = *it;
@@ -592,15 +617,6 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
     BMesh::Point pRef1 = toBMeshPoint(tr.point(vh[0]));
     BMesh::Point pRef2 = toBMeshPoint(tr.point(vh[1]));
     BMesh::Point pRef3 = toBMeshPoint(tr.point(vh[2]));
-    cout << endl;
-    cout << endl;
-    cout << "vh" << endl;
-    cout << "pRef1 = " << pRef1 << endl;
-    cout << "pRef2 = " << pRef2 << endl;
-    cout << "pRef3 = " << pRef3 << endl;
-
-    //cout << s->valence() << endl;
-    cout << "TAILLE " << triangles.size() << endl;
 
     // On ajoute le triangle déjà orienté dans le tableau définitif
     s->getTriangles().push_back(vh);
@@ -612,23 +628,17 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
 
     // On commence au début de la liste
     list<vector<vhandle> >::iterator it = triangles.begin();
-    //vector<vhandle>& vh2 = *it;
     vector<vhandle> vh2;
     BMesh::Point p1,p2,p3;
-    bool vh2Empty = false;
+    bool vh2Null = false;
     int count = 0;
     // Tant qu'on n'a pas trouvé de triangles adjacents et qu'il y a des candidats
     while (it != triangles.end()) {
-        count++;
         // On prend le triangle
         vh2 = *it;
         p1 = toBMeshPoint(tr.point(vh2[0]));
         p2 = toBMeshPoint(tr.point(vh2[1]));
         p3 = toBMeshPoint(tr.point(vh2[2]));
-        cout << "while1 p1 = " << p1 << endl;
-        cout << "while1 p2 = " << p2 << endl;
-        cout << "while1 p3 = " << p3 << endl;
-        cout << endl;
         // On teste s'il est adjacent
         if ((p1 == pRef1) && (p2 == pRef2)){
             // 1->2 => swap
@@ -749,19 +759,18 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
         }
         // Si le triangle n'est pas adjacent, on passe au suivant
         ++it;
+        count++;
     }
-    cout << "count = " << count << endl;
 
     if (it == triangles.end()) {
-        vh2Empty = true;
+        vh2Null = true;
     }
 
     it = triangles.begin();
-    for (int i = 0; i < count-1; i++) {
+    for (int i = 0; i < count; i++) {
         ++it;
     }
     vector<vhandle> vh3;
-    int count2 = 0;
     // On cherche s'il y a un deuxième triangle adjacent
     while (it != triangles.end()) {
         // On passe au triangle suivant
@@ -769,16 +778,11 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
         if (it == triangles.end()) {
             break;
         }
-        count2++;
         // On prend le nouveau triangle
         vh3 = *it;
         p1 = toBMeshPoint(tr.point(vh3[0]));
         p2 = toBMeshPoint(tr.point(vh3[1]));
         p3 = toBMeshPoint(tr.point(vh3[2]));
-        cout << "while2 p1 = " << p1 << endl;
-        cout << "while2 p2 = " << p2 << endl;
-        cout << "while2 p3 = " << p3 << endl;
-        cout << endl;
 
         // On teste s'il est adjacent
         if ((p1 == pRef1) && (p2 == pRef2)){
@@ -900,32 +904,8 @@ void Skeleton::orientate(Sphere* s, list<vector<vhandle> > &triangles, vector<vh
         }
         // Si le triangle n'est pas adjacent, on passe au suivant
     }
-    cout << "count2 = " << count2 << endl;
 
-    cout << "empty = " << vh2Empty << endl;
-    if (!vh2Empty) {
-        BMesh::Point vh2pRef1 = toBMeshPoint(tr.point(vh2[0]));
-        BMesh::Point vh2pRef2 = toBMeshPoint(tr.point(vh2[1]));
-        BMesh::Point vh2pRef3 = toBMeshPoint(tr.point(vh2[2]));
-        cout << endl;
-        cout << endl;
-        cout << "vh2" << endl;
-        cout << "vh2p1 = " << vh2pRef1 << endl;
-        cout << "vh2p2 = " << vh2pRef2 << endl;
-        cout << "vh2p3 = " << vh2pRef3 << endl;
-        if (it != triangles.end()) {
-            BMesh::Point vh3pRef1 = toBMeshPoint(tr.point(vh3[0]));
-            BMesh::Point vh3pRef2 = toBMeshPoint(tr.point(vh3[1]));
-            BMesh::Point vh3pRef3 = toBMeshPoint(tr.point(vh3[2]));
-            cout << endl;
-            cout << endl;
-            cout << "vh3" << endl;
-            cout << "vh3p1 = " << vh3pRef1 << endl;
-            cout << "vh3p2 = " << vh3pRef2 << endl;
-            cout << "vh3p3 = " << vh3pRef3 << endl;
-        }
-    }
-    if (!vh2Empty) {
+    if (!vh2Null) {
         orientate(s,triangles,vh2);
         if (it != triangles.end()) {
             orientate(s,triangles,vh3);
@@ -1007,15 +987,6 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
 
     setNeighbors();
 
-    for (unsigned int i = 0; i < balls.size(); i++) {
-        Sphere* s = balls[i];
-        //if (balls[i]->valence() == 1) {
-          //  cout << "end = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
-        //} else
-        if (balls[i]->valence() == 2) {
-            cout << "connection = " << i << " " << s->getX() << " " << s->getY() << " " << s->getZ() << endl;
-        }
-    }
     return true;
 }
 

@@ -47,6 +47,7 @@ public:
      * @return inbetweenballs between the two balls composong the edge
      */
     std::vector<Sphere*>& getInBetweenBalls();
+    std::vector<Sphere*>& getInBetweenBallsInverse();
 
     // A COMMENTER
     std::vector<BMesh::Point>& getPoints();
@@ -61,6 +62,7 @@ private:
     int index1;
     int index2;
     std::vector<Sphere*> inbetweenballs;
+    std::vector<Sphere*> inbetweenballsInverse;
     std::vector<BMesh::Point> pointsMesh;
 };
 
