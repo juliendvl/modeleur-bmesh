@@ -350,7 +350,6 @@ void Window::doAll() {
     int nbSub = nbIter->value();
 
     doSweep();
-    doStitch();
 
     for (int i = 0; i < nbSub; ++i) {
         subdivide();
