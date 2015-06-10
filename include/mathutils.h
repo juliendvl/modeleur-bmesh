@@ -23,6 +23,12 @@ public:
                                         const Eigen::Vector3f &n);
 
 
+    /**
+     * @brief Project a vector onto a plane defined by a normal
+     * @param v Vector to project
+     * @param n Normal
+     * @return Projected vector
+     */
     static Eigen::Vector3f projectVector(const Eigen::Vector3f &v,
                                          const Eigen::Vector3f &n);
 };

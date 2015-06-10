@@ -49,20 +49,10 @@ public:
     void draw();
 
     /**
-     * @brief Inits the skeleton
-     */
-    void init(Viewer &);
-
-    /**
      * @brief  Returns balls composing the skeleton (nodes)
      * @return balls composing the skeleton
      */
     std::vector<Sphere*>& getBalls();
-
-    /**
-     * @brief  Returns balls composing the skeleton (nodes)
-     * @return balls composing the skeleton
-     */
     std::vector<Sphere*> getBalls() const;
 
     /**
@@ -70,11 +60,6 @@ public:
      * @return edges composing the skeleton
      */
     std::vector< std::vector<Segment*> >& getEdges();
-
-    /**
-     * @brief  Returns edges composing the skeleton
-     * @return edges composing the skeleton
-     */
     std::vector< std::vector<Segment*> > getEdges() const;
 
     /**
@@ -84,14 +69,34 @@ public:
     Mesh& getMesh();
 
     /**
+     * @brief Generates inbetween-balls
+     */
+    void interpolation();
+
+    /**
      * @brief Loads a skeleton from a .txt file
      * @param fileName file to load
      * @return true if loading succeed; false otherwise
      */
     bool loadFromFile(const std::string &fileName);
 
-    // A COMMENTER
+    /**
+     * @brief Saves a skeleton
+     * @param fileName file to save
+     * @return true if save succeed; false otherwise
+     */
+    bool save(const std::string &fileName);
+
+    /**
+     * @brief Indicates if we want to draw inbetween-balls
+     * @param draw true if we want to draw inbetween-balls; false otherwise
+     */
     void setBetweenBalls(bool draw);
+
+    /**
+     * @brief Updates balls neighbors
+     */
+    void setNeighbors();
 
     /**
      * @brief Performs sweeping
@@ -114,8 +119,6 @@ private:
 
     // PRIVATE METHODS
     void createFaces(std::vector<BMesh::VertexHandle>& vhandle, bool endNode);
-    void setNeighbors();
-    void interpolation();
     std::vector<float> splitSpaces(const std::string &s);
     void sweepVoisin(int origin, int neighbor);
     void orientate(Sphere* s, list<vector<vhandle> >& triangles, vector<vhandle>& vh);

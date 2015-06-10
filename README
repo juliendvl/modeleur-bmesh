@@ -1,0 +1,35 @@
+*** Modeleur 3D par B-Mesh ***
+
+Projet de Spécialité de deuxième année - Ensimag
+Juin 2015
+
+Julien Daval
+Omid Ghorreshi
+
+
+*******************************************************************************
+
+Ce programme permet de créer facilement et efficacement le maillage d'une forme
+3D uniquement à partir de sphères et de liens entre ces sphères.
+
+Adapté de l'article "B-Mesh: A Fast Modeling System for Base Meshes of 3D
+		     Articulated Shapes" 
+
+
+*******************************************************************************
+
+
+*** Instructions pour compiler le projet ***
+
+Le programme nécessite au moins Qt4 et la libraire QGLviewer. Pour les
+installer:
+	- Passer en root
+	- apt-get install libqglviewer2 libqglviewer-dev freeglut3-dev
+	  (sous Debian et dérivés - Ubuntu etc)
+
+Le programme ne nécessite à priori pas d'installer d'autres librairies Au cas
+où, les autres libraires utilisées sont:
+	- OpenMesh
+	- Eigen
+	- NLOpt
+	- CGAL

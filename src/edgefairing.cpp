@@ -33,10 +33,10 @@ double objFunc(const vector<double> &x, vector<double> &g, void *data) {
     Vector2f vx(x[0], x[1]);
     Data *d = (Data*)data;
 
-    float t1 = (d->a - vx).dot(d->ev);
-    float t2 = (d->b - vx).dot(d->eu);
-    float t3 = (d->c - vx).dot(d->ev);
-    float t4 = (d->d - vx).dot(d->eu);
+    float t1 = (d->a - vx).dot(d->eu);
+    float t2 = (d->b - vx).dot(d->ev);
+    float t3 = (d->c - vx).dot(d->eu);
+    float t4 = (d->d - vx).dot(d->ev);
 
     return t1*t1 + t2*t2 + t3*t3 + t4*t4;
 }
@@ -72,7 +72,7 @@ bool EdgeFairing::fairing() {
         }
 
         // We get curvature tensor
-        CurvatureTensor ct(*m);
+        CurvatureTensor ct(m);
         ct.compute(*vit, neighbors);
         vector<float> curv = ct.getCurvatures();
 

@@ -1,5 +1,6 @@
 #include <fstream>
 #include <sstream>
+#include <limits>
 #include "skeleton.h"
 #include "cylinder.h"
 #include <cassert>
@@ -41,12 +42,9 @@ Skeleton::~Skeleton() {
     }
 }
 
-void Skeleton::init(Viewer &) {
-    this->interpolation();
-}
 
 void Skeleton::draw() {
-    float r_min = balls[0]->getRadius();
+    float r_min = numeric_limits<float>::max();
     float r;
     for(vector<Sphere*>::iterator it = balls.begin(); it != balls.end(); it++) {
         Sphere* s = *it;
@@ -106,6 +104,16 @@ void Skeleton::addEdge(Segment* sg) {
 }
 
 void Skeleton::interpolation() {
+    // We delete former inbetween-balls
+    for (unsigned int i = 0; i < edges.size(); i++) {
+        for (unsigned int j = 0; j < edges.size(); j++) {
+            if (edges[i][j] == NULL)
+                continue;
+
+            edges[i][j]->getInBetweenBalls().clear();
+        }
+    }
+
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {
             Segment* sg = edges[i][j];
@@ -182,6 +190,9 @@ void Skeleton::interpolation() {
 }
 
 void Skeleton::sweeping() {
+    // We should interpolate balls before in case of key-balls modification
+    interpolation();
+
     for (unsigned int i = 0; i < balls.size(); i++) {
         Sphere* s = balls[i];
         // If this is a joint node
@@ -984,9 +995,41 @@ bool Skeleton::loadFromFile(const std::string &fileName) {
     }
 
     file.close();
-
     setNeighbors();
 
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+bool Skeleton::save(const string &fileName) {
+    ofstream file(fileName.c_str(), ios::out | ios::trunc);
+    if (!file.is_open())
+        return false;
+
+    file << "# Skeleton automatically generated" << endl << endl;
+
+    // Balls
+    file << "# Balls" << endl;
+    for (unsigned int i = 0; i < balls.size(); ++i) {
+        Sphere *s = balls[i];
+        file << "v " << s->getX() << " " << s->getY() << " " << s->getZ();
+        file << " " << s->getRadius() << endl;
+    }
+
+    // Edges
+    file << endl << "# Edges" << endl;
+    for (unsigned int i = 0; i < edges.size(); ++i) {
+        for (unsigned int j = 0; j < edges.size(); ++j) {
+            Segment *s = edges[i][j];
+            if (s == NULL)
+                continue;
+
+            file << "e " << s->getIndex1() << " " << s->getIndex2() << endl;
+        }
+    }
+
+    file.close();
     return true;
 }
 
@@ -999,6 +1042,11 @@ Mesh& Skeleton::getMesh() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void Skeleton::setNeighbors() {
+    for (unsigned int i = 0; i < balls.size(); i++) {
+        vector<int>& tmp = balls[i]->getNeighbors();
+        tmp.clear();
+    }
+
     for (unsigned int i = 0; i < edges.size(); i++) {
         for (unsigned int j = 0; j < edges.size(); j++) {
             if (edges[i][j] != NULL) {
