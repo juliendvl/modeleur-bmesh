@@ -37,7 +37,7 @@
 
 	\begin{block}{Objectifs}
 		\begin{itemize}
-			\item Développer un outil potentiellement utilisable par d'autres personnes;
+			\item Développer un outil de création de maillage potentiellement utilisable par d'autres personnes;
 			\item Aller plus loin que ce que les articles peuvent nous dire.
 		\end{itemize}			
 	\end{block}
@@ -151,21 +151,9 @@
 	\tableofcontents[currentsection]
 \end{frame}
 
-% Intro article
-\begin{frame}
-	\frametitle{À propos de l'article}
-	\begin{block}{Source}
-		\begin{center}
-			\textit{B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes} \\
-			Ji Zhongping, Liu Ligang, Wang Yigang \\ 
-			
-			Institute of Graphics and Image, Hangzhou Dianzi University, China \\
-			Department of Mathematics, Zhejiang University, China
-		\end{center}
-	\end{block}
-\end{frame}
 
 %% Interpolation
+\subsection{Interpolation}
 \begin{frame}
 	\frametitle{Interpolation}
 	\begin{block}{But}
@@ -185,6 +173,7 @@
 \end{frame}
 
 %% Sweeping
+\subsection{Sweeping}
 \begin{frame}
 	\frametitle{Sweeping}
 	\begin{block}{But}
@@ -208,6 +197,7 @@
 \end{frame}
 
 %% Stitching
+\subsection{Stitching}
 \begin{frame}
 	\frametitle{Stitching}
 	\begin{block}{But}
@@ -348,9 +338,17 @@
 	\frametitle{Évolution du maillage}
 	\framesubtitle{Résultat}
 	
-	\begin{center}
-		\includegraphics[scale=0.45]{images/meshevolve.jpg}
-	\end{center}
+	\begin{figure}[H]
+		\centering
+		\leavevmode
+  		\hbox{
+  			\includegraphics[scale=0.3]{images/catmullclark.jpg}
+  			\hspace*{0.5cm} 
+     		\includegraphics[scale=0.3]{images/meshevolve.jpg}
+     		\hspace*{0.5cm}  
+  		}
+  		\caption{Maillage avant évolution (à gauche) puis après évolution (à droite)}
+	\end{figure}
 \end{frame}
 
 %% Résultat: influence de T
@@ -424,7 +422,7 @@
 	\begin{block}{Ce qui a été fait}
 		\begin{itemize}
 			\item Interface graphique;
-			\item Sweeping, subdivision, évolution et fairing.
+			\item Sweeping, première étape du stitching, subdivision, évolution et fairing.
 		\end{itemize}
 	\end{block}
 	
