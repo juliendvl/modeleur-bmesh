@@ -16,7 +16,6 @@
 \author{Julien Daval \\ Omid Ghorreshi}
 \institute[Ensimag 2A]{2ème année Ensimag}
 \date{11 Juin 2015}
-\logo{\includegraphics[scale=0.3]{images/ensimag.jpg}}
 
 
 %%%% Début du document %%%%
@@ -26,6 +25,10 @@
 %% Affichage de la page de garde
 \begin{frame}
 	\titlepage
+	\begin{center}
+		\includegraphics[scale=0.3]{images/ensimag.jpg}	
+	\end{center}
+
 \end{frame}
 
 %% Cadre du projet %%
@@ -72,6 +75,16 @@
 			\item Sphères;
 			\item Liens entre ces sphères.
 		\end{itemize}
+	\end{block}
+	
+	\begin{block}{Source}
+		\begin{center}
+			\textit{B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes} \\
+			Ji Zhongping, Liu Ligang, Wang Yigang \\ 
+			
+			Institute of Graphics and Image, Hangzhou Dianzi University, China \\
+			Department of Mathematics, Zhejiang University, China
+		\end{center}
 	\end{block}
 	
 	\begin{center}
@@ -123,20 +136,6 @@
 \begin{frame}
 	\frametitle{Sommaire}
 	\tableofcontents[currentsection]
-\end{frame}
-
-% Intro article
-\begin{frame}
-	\frametitle{À propos de l'article}
-	\begin{block}{Source}
-		\begin{center}
-			\textit{B-Mesh: A Fast Modeling System for Base Meshes of 3D Articulated Shapes} \\
-			Ji Zhongping, Liu Ligang, Wang Yigang \\ 
-			
-			Institute of Graphics and Image, Hangzhou Dianzi University, China \\
-			Department of Mathematics, Zhejiang University, China
-		\end{center}
-	\end{block}
 \end{frame}
 
 
@@ -257,6 +256,16 @@
 	\end{block}
 \end{frame}
 
+%% Résultats
+\begin{frame}
+	\frametitle{Évolution du maillage}
+	\framesubtitle{Résultat}
+	
+	\begin{center}
+		\includegraphics[scale=0.45]{images/meshevolve.jpg}
+	\end{center}
+\end{frame}
+
 %% Résultat: influence de T
 \begin{frame}
 	\frametitle{Résultats}
@@ -319,12 +328,37 @@
 	\end{block}
 \end{frame}
 
-%% Résultats
+
+%% Conclusion
+\section{Améliorations}
 \begin{frame}
-	\frametitle{Edge Fairing}
-	\framesubtitle{Résultats}
+	\frametitle{Améliorations}
 	
-	%% A FAIRE !
+	\begin{block}{Ce qui a été fait}
+		\begin{itemize}
+			\item Interface graphique;
+			\item Sweeping, subdivision, évolution et fairing.
+		\end{itemize}
+	\end{block}
+	
+	\begin{block}{Ce qui est à améliorer}
+		\begin{itemize}
+			\item Correction du stitching;
+			\item Meilleures structures de données;
+			\item Trouver des solutions aux limitations de l'algorithme.
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+
+%% références
+\section{Références}
+\begin{frame}
+	\frametitle{Références}
+	\begin{itemize}
+		\item  Zhongping J., Ligang L., Yigang W., B-mesh: A modeling system for base meshes of 3d articulated shapes, Computer 					Graphics Forum 29 (7) (2010) 2169–2177
+		\item Kobbelt L., Campagna S., Vorsatz J., Seidel H.-P.: Interactive multi-resolution modeling on arbitrary meshes. In Proc. of SIGGRAPH (1998), pp. 105–114
+	\end{itemize}
 \end{frame}
 
 
