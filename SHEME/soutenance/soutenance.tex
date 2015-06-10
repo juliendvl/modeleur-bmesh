@@ -139,6 +139,66 @@
 	\end{block}
 \end{frame}
 
+%% Interpolation
+\begin{frame}
+	\frametitle{Interpolation}
+	\begin{block}{But}
+		Compléter de manière régulière les segments liant les sphères
+	\end{block}
+	\begin{block} {Types de sphères}
+		\begin{itemize}
+			\item \textit{Joint node} (en rouge)
+			\item \textit{Connection node} (en bleu)
+			\item \textit{End node} (en jaune)
+			\item \textit{Inbetween-balls} (en blanc)
+		\end{itemize}
+	\end{block}
+	\begin{center}
+	\includegraphics[scale=0.27]{images/bonhomme_interpole.png}
+	\end{center}
+\end{frame}
+
+%% Sweeping
+\begin{frame}
+	\frametitle{Sweeping}
+	\begin{block}{But}
+		Construire un premier maillage autour des branches du squelette
+	\end{block}
+	\begin{block}{Principe}
+		A partir de chaque \textit{joint node}, on parcourt les branches liées à la joint node en entourant les sphères d'un maillage quadrangulaire
+	\end{block}
+		\begin{figure}[H]
+		\centering
+		\leavevmode
+  		\hbox{
+  			\includegraphics[scale=0.25]{images/sweeping1.jpg}
+  			\hspace*{0.5cm} 
+     		\includegraphics[scale=0.25]{images/sweeping2.jpg}
+     		\hspace*{0.5cm}  
+  		}
+  		\caption{T = 0.1 (à gauche) et T = 0.3 (à droite)}
+	\end{figure}
+	
+\end{frame}
+
+%% Stitching
+\begin{frame}
+	\frametitle{Stitching}
+	\begin{block}{But}
+		Compléter le premier maillage autour des \textit{joint node}
+	\end{block}
+	\begin{block}{Principe}
+		Pour chaque \textit{joint node} :
+		\begin{itemize}
+				\item On construit l'enveloppe convexe formée par les points du maillage à l'extrémité des branches liées à la \textit{joint node}
+				\item On triangularise l'enveloppe convexe
+				\item On passe du maillage triangulaire au maillage quadrangulaire
+		\end{itemize}
+	\end{block}
+	\begin{center}
+	\includegraphics[scale=0.15]{images/stitching.png}
+	\end{center}
+\end{frame}
 
 %% Tenseur de courbure %%
 \begin{frame}
