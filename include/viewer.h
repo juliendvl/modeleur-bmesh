@@ -13,13 +13,29 @@ class Renderable;
 class Viewer : public QGLViewer
 {
 
-public :        
+public :
+    /**
+     * @brief Constructor
+     */
 	Viewer();
 	virtual ~Viewer();
 
+    /**
+     * @brief Adds a renderable object in the drawable list
+     * @param r object to add
+     */
 	void addRenderable(Renderable *r);
+
+    /**
+     * @brief Deletes a renderable object in the drawable list
+     * @param r object to delete
+     */
     void delRendreable(Renderable *r);
 
+    /**
+     * @brief Updates the skeleton linked with the viewer
+     * @param s skeleton
+     */
     void setSkeleton(Skeleton *s);
 
 /* Scene methods */
@@ -41,9 +57,8 @@ protected :
 	/// Handle keyboard events specifically
 	virtual void keyPressEvent(QKeyEvent *e);
 
-	/// Handle keyboard events specifically
+    /// Handle mouse events specifically
 	virtual void mouseMoveEvent(QMouseEvent *e);
-
     virtual void mousePressEvent(QMouseEvent *e);
 
     /// Draw every objects of the scene

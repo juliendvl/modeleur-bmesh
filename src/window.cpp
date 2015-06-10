@@ -259,6 +259,9 @@ void Window::doSweep() {
 void Window::doStitch() {
     // TODO: process stitching
 
+    if (sweep->isEnabled())
+        return;
+
     stitch->setEnabled(false);
     catmullClark->setEnabled(true);
 
