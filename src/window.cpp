@@ -226,6 +226,7 @@ void Window::load() {
     // We can allow the user to click other buttons
     saveMeshB->setEnabled(false);
     sweep->setEnabled(true);
+    stitch->setEnabled(true);
     catmullClark->setEnabled(false);
     evol->setEnabled(false);
     fair->setEnabled(false);
