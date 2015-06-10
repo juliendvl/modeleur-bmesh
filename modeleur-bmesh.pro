@@ -13,6 +13,7 @@ SOURCES  = src/*.cpp
 
 macx:LIBS *= -framework Glut
 linux-g++*:LIBS *= -lglut -lOpenMeshCored -lGLU -Lnlopt/lib -lnlopt -lCGAL -lgmp
+
 # MacOS, default
 QGL = -lqglviewer
 
