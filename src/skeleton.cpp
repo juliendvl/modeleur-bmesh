@@ -54,7 +54,8 @@ void Skeleton::draw() {
         // joint or connection nodes
         switch (s->valence()) {
         case 0:
-            continue;
+            s->setColor(0.0, 1.0, 0.0);
+            break;
         case 1:
             s->setColor(1.0, 1.0, 0.0);
             break;
