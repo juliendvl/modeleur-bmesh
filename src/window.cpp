@@ -46,7 +46,6 @@ void Window::initGUI() {
     this->showBetween  = new QPushButton("Show inbetween-balls");
     this->sweep        = new QPushButton("Sweeping");
     this->stitch       = new QPushButton("Stitching");
-    stitch->setEnabled(false);
     this->catmullClark = new QPushButton("Subdivide Mesh");
     catmullClark->setEnabled(false);
     this->evol         = new QPushButton("Evolve mesh");
@@ -227,7 +226,6 @@ void Window::load() {
     // We can allow the user to click other buttons
     saveMeshB->setEnabled(false);
     sweep->setEnabled(true);
-    stitch->setEnabled(false);
     catmullClark->setEnabled(false);
     evol->setEnabled(false);
     fair->setEnabled(false);
@@ -246,13 +244,14 @@ void Window::doSweep() {
     sweep->setEnabled(false);
     nbIter->setEnabled(false);
     goSub->setEnabled(false);
-    stitch->setEnabled(true);
 
     // We stop mouse tracking
     viewer->setMouseTracking(false);
 
     // We do not need to generate again inbetween-balls
     this->generateBetweenBalls = false;
+
+    viewer->update();
 }
 
 
@@ -262,6 +261,8 @@ void Window::doStitch() {
 
     stitch->setEnabled(false);
     catmullClark->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -303,6 +304,8 @@ void Window::subdivide() {
 
     catmullClark->setEnabled(false);
     evol->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -316,6 +319,8 @@ void Window::evolve() {
 
     evol->setEnabled(false);
     fair->setEnabled(true);
+
+    viewer->update();
 }
 
 
@@ -328,6 +333,8 @@ void Window::fairing() {
 
     fair->setEnabled(false);
     catmullClark->setEnabled(true);
+
+    viewer->update();
 }
 
 

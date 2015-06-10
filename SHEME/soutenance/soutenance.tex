@@ -188,6 +188,71 @@
 %% Mesh evolution %%
 \subsection{Évolution du maillage}
 
+%% Intro
+\begin{frame}
+	\frametitle{Évolution du maillage}
+	\framesubtitle{Quelques notions}
+	
+	\begin{block}{Motivation}
+		Le maillage généré par Catmull-Clark dévie de l'union de sphères.
+	\end{block}
+	
+	\begin{block}{Champ scalaire}
+		On définit la fonction $f_i$ par:
+		\begin{equation*}
+  			f_i(r)=
+     			\begin{cases}
+        			\left(1 - \left(\frac{r}{R_i}\right)^2 \right)^2 & \text{si $r \le R_i$} \\
+        			0 & \text{si $r > R_i$}
+     			\end{cases}
+		\end{equation*}
+		$r^2 = (x - c_x^i)^2 + (y - c_y^i)^2 + (z - c_z^i)^2$ \\
+		$R_i = \alpha r_i$, $r_i$ rayon de la sphère $i$ et $\alpha = 1.5$ \\
+		$(c_x^i, c_y^i, c_z^i)$ centre de la sphère $i$
+	
+	\end{block}
+\end{frame}
+
+%% évolution suite
+\begin{frame}
+	\frametitle{Évolution du maillage}
+	\framesubtitle{Quelques notions}
+	
+	\begin{block}{Condition d'arrêt}
+		\begin{equation*}
+			\mathcal{I}(x) = \sum_{i=1}^{n} f_i - T = 0
+		\end{equation*}
+	\end{block}
+	
+	\begin{block}{Équation d'évolution}
+		\begin{equation*}
+			\frac{d\textbf{x}}{dt} = \textbf{n}(\textbf{x}, t) \mathcal{F}(\textbf{x}, \textbf{n}, \kappa, \mathcal{I}, ...)		
+		\end{equation*}
+		$\textbf{n} = -\nabla\mathcal{I} / \Vert\nabla\mathcal{I}\Vert$ : normale \\
+		$\mathcal{F} = ( \mathcal{I} - \mathcal{I}_{cible} ) f(\kappa)$ : caractérise la vitesse d'évolution \\
+		$f(\kappa) = 1 / (1 + |\kappa_1| + |\kappa_2|)$
+	\end{block}
+\end{frame}
+
+%% évolution fin
+\begin{frame}
+	\frametitle{Évolution du maillage}
+	\framesubtitle{Détermination du nouveau point}
+	
+	\begin{block}{Nouveau point ?}
+		\begin{equation*}
+			\textbf{x}(t + dt) = \textbf{x}(t) + \textbf{n}(\textbf{x}, t) \mathcal{F}(\textbf{x}, ...) dt
+		\end{equation*}
+	\end{block}
+	
+	\begin{block}{Choix de dt}
+		\begin{equation*}
+			dt \le \frac{min\{r_i\}}{2^k \mathcal{F}_{max}}
+		\end{equation*}
+		$k$ : niveau de subdivision
+	\end{block}
+\end{frame}
+
 %% Résultat: influence de T
 \begin{frame}
 	\frametitle{Résultats}
@@ -223,7 +288,7 @@
 		Appliquer un \textit{fairing} local sur chaque point du maillage.
 	\end{block}
 	
-	\begin{block}{Prérequis}
+	\begin{block}{Pré requis}
 		Deux types de points:
 		\begin{itemize}
 			\item les points ayant exactement 4 voisins;
