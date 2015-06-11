@@ -21,15 +21,34 @@ Adapté de l'article "B-Mesh: A Fast Modeling System for Base Meshes of 3D
 
 *** Instructions pour compiler le projet ***
 
-Le programme nécessite au moins Qt4 et la libraire QGLviewer. Pour les
-installer:
-	- Passer en root
-	- apt-get install libqglviewer2 libqglviewer-dev freeglut3-dev
-	  (sous Debian et dérivés - Ubuntu etc)
-
-Le programme ne nécessite à priori pas d'installer d'autres librairies Au cas
-où, les autres libraires utilisées sont:
+Pour fonctionner, le programme nécessite les bibliothèques suivantes:
+	- Qt (>= 4)
+	- OpenGL
+	- QGLviewer
 	- OpenMesh
-	- Eigen
-	- NLOpt
 	- CGAL
+	- Eigen
+	- NLopt
+Eigen et NLopt sont fournies avec le projet: il n'y a pas besoin de les installer.
+Par contre, les autres ont besoin d'être installées: il suffit d'installer les paquets
+suivants (les noms des paquets sont ceux de Debian et dérivés - voir le nom des paquets
+si vous avez une autre distribution):
+	- libqglviewer2 libqglviewer-dev
+	- freeglut3-dev
+	- libcgal-dev
+
+Pour OpenMesh, il n'y a pas de paquets disponibles: il faut installer directement à
+partir des sources.
+--> voir http://www.openmesh.org/media/Documentations/OpenMesh-Doc-Latest/a00030.html
+
+
+
+*** Notes relatives au fonctionnement du projet ***
+
+	- Par faute de temps, nous n'avons pas pu terminer l'étape de stitching,
+ce qui explique les bugs que l'on peut rencontrer.
+	- Il peut y avoir un problème quand on veut augmenter/diminuer le rayon
+d'une sphère (elle se déplace). Si vous possédez une version de QGLviewer
+supérieure à 2.5.2, vous pouvez régler ce problème en décommentant la ligne:
+setZoomSensitivity(0.0)
+dans le constructeur de la classe Sphere (sphere.cpp)
